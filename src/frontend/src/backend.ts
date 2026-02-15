@@ -138,6 +138,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    searchByKeyword(searchText: string): Promise<Array<FeedItem>>;
     toggleLike(feedItemId: string): Promise<void>;
 }
 import type { ExternalBlob as _ExternalBlob, FeedItem as _FeedItem, MediaType as _MediaType, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
@@ -351,6 +352,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.saveCallerUserProfile(arg0);
             return result;
+        }
+    }
+    async searchByKeyword(arg0: string): Promise<Array<FeedItem>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.searchByKeyword(arg0);
+                return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.searchByKeyword(arg0);
+            return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
         }
     }
     async toggleLike(arg0: string): Promise<void> {

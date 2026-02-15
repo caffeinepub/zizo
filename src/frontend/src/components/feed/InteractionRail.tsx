@@ -1,6 +1,7 @@
-import { Heart, MessageCircle, Share2, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Loader2, Download } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
+import { downloadMedia } from '../../utils/downloadMedia';
 
 interface InteractionRailProps {
   likeCount: number;
@@ -8,9 +9,21 @@ interface InteractionRailProps {
   onLike: () => void;
   isAuthenticated: boolean;
   isLoading?: boolean;
+  mediaUrl: string;
+  itemId: string;
+  mediaType: 'image' | 'video';
 }
 
-export function InteractionRail({ likeCount, isLiked, onLike, isAuthenticated, isLoading }: InteractionRailProps) {
+export function InteractionRail({ 
+  likeCount, 
+  isLiked, 
+  onLike, 
+  isAuthenticated, 
+  isLoading,
+  mediaUrl,
+  itemId,
+  mediaType
+}: InteractionRailProps) {
   const handleLikeClick = () => {
     if (!isAuthenticated) {
       toast.error('Please log in to like posts');
@@ -25,6 +38,17 @@ export function InteractionRail({ likeCount, isLiked, onLike, isAuthenticated, i
 
   const handleShareClick = () => {
     toast.info('Share feature coming soon!');
+  };
+
+  const handleDownload = async () => {
+    try {
+      const filename = `zizo-${itemId}.${mediaType === 'video' ? 'mp4' : 'jpg'}`;
+      await downloadMedia(mediaUrl, filename);
+      toast.success('Download started!');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Download failed. Please try again.');
+    }
   };
 
   return (
@@ -72,6 +96,17 @@ export function InteractionRail({ likeCount, isLiked, onLike, isAuthenticated, i
           onClick={handleShareClick}
         >
           <Share2 className="h-7 w-7" />
+        </Button>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 rounded-full bg-black/40 hover:bg-black/60 text-white"
+          onClick={handleDownload}
+        >
+          <Download className="h-7 w-7" />
         </Button>
       </div>
     </div>

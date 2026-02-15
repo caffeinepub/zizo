@@ -1,18 +1,34 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import { useFeedItems } from '../../hooks/useQueries';
 import { FeedItem } from './FeedItem';
 import { Loader2 } from 'lucide-react';
+import { Button } from '../ui/button';
 
-export function VideoFeed() {
-  const { data: items, isLoading, error } = useFeedItems();
+export interface VideoFeedHandle {
+  scrollToItemId: (id: string) => void;
+}
+
+export const VideoFeed = forwardRef<VideoFeedHandle>((_, ref) => {
+  const { data: items, isLoading, error, refetch } = useFeedItems();
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const itemRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  useImperativeHandle(ref, () => ({
+    scrollToItemId: (id: string) => {
+      const element = itemRefsMap.current.get(id);
+      if (element && containerRef.current) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const index = items?.findIndex(item => item.id.toString() === id) ?? 0;
+        setActiveIndex(index);
+      }
+    },
+  }));
 
   useEffect(() => {
     if (!containerRef.current || !items || items.length === 0) return;
 
-    // Create intersection observer to detect active item
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -28,7 +44,6 @@ export function VideoFeed() {
       }
     );
 
-    // Observe all feed items
     const itemElements = containerRef.current.querySelectorAll('[data-feed-item]');
     itemElements.forEach((item) => observerRef.current?.observe(item));
 
@@ -53,7 +68,12 @@ export function VideoFeed() {
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <div className="text-center max-w-md px-4">
           <p className="text-destructive text-lg font-semibold mb-2">Failed to load feed</p>
-          <p className="text-muted-foreground text-sm">Please try refreshing the page</p>
+          <p className="text-muted-foreground text-sm mb-4">
+            {error instanceof Error ? error.message : 'Network issue. Please try again.'}
+          </p>
+          <Button onClick={() => refetch()} variant="default">
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -87,8 +107,17 @@ export function VideoFeed() {
           item={item}
           isActive={index === activeIndex}
           index={index}
+          ref={(el) => {
+            if (el) {
+              itemRefsMap.current.set(item.id.toString(), el);
+            } else {
+              itemRefsMap.current.delete(item.id.toString());
+            }
+          }}
         />
       ))}
     </div>
   );
-}
+});
+
+VideoFeed.displayName = 'VideoFeed';

@@ -1,15 +1,20 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Expand the simplified TikTok-style vertical video feed to include a mobile-app experience and user-generated content: allow anyone to upload videos and pictures via an upload button, with uploads appearing immediately in the global feed.",
+  "projectStateVersion": 9,
+  "summary": "Expand the TikTok-style vertical feed web app (PWA-like) with reliable upload visibility/feedback and feed loading, plus new capabilities: in-feed search across captions/handles for both videos and images, in-app capture/editing tools, stronger in-app security verification (security questions + device confirmation + PIN on suspicious activity), and the ability to download uploaded media to the user’s device.",
   "architectural_notes": [
     "Target platform is web (React) rather than Expo/React Native.",
     "Core experience: vertical, full-screen, swipe/scroll paging video feed (TikTok-style).",
-    "Backend should be implemented as a canister (for the like API and feed metadata)."
+    "Backend should be implemented as a canister (for the like API and feed metadata).",
+    "Search must query across both captions and creator handles and return mixed media (video+image) results.",
+    "Implement in-browser media capture and editing (camera access + client-side crop/trim/text/filters) for upload flow.",
+    "Security flow includes risk-triggered PIN challenge plus security questions and device confirmation; no email-based verification."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- App icon (zizo-app-icon.dim_512x512.png)\n- App icon (zizo-app-icon.dim_192x192.png)\n- Maskable app icon (zizo-app-icon-maskable.dim_512x512.png)",
+  "known_issues": [
+    "Uploads provide no success/progress feedback and uploaded posts are not visible after uploading.",
+    "Feed can appear completely empty (no older posts displayed), indicating a feed loading/fetch/rendering failure."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-full-screen-vertically-paged-video-feed-ui-one-video-per-screen-that-works-in-modern-desktop-and-mobile-browsers-using-scroll-snap-or-equivalent-so-each-swipe-scroll-lands-on-the-next-previous-video",
@@ -82,6 +87,62 @@
         "REQ-11"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-fix-the-feed-sometimes-rendering-as-completely-empty-by-making-feed-loading-resilient-and-diagnosable-ensure-the-app-always-attempts-to-fetch-fetchfeeditems-when-an-actor-is-available-anonymous-or-authenticated-and-surface-actionable-error-details-without-exposing-sensitive-data-when-the-fetch-fails",
+      "title": "Fix the feed sometimes rendering as completely empty by making feed loading resilient and diagnosable: ensure the app always attempts to fetch `fetchFeedItems()` when an actor is available (anonymous or authenticated), and surface actionable error details (without exposing sensitive data) when the fetch fails.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-upload-ux-so-users-always-receive-clear-progress-completion-feedback-and-their-new-post-becomes-visible-immediately-after-upload-succeeds",
+      "title": "Improve upload UX so users always receive clear progress + completion feedback and their new post becomes visible immediately after upload succeeds.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-keyword-search-for-both-videos-and-images-across-captions-and-creator-handles-accessible-via-a-search-button-in-the-main-top-bar",
+      "title": "Add keyword search for both videos and images across captions and creator handles, accessible via a Search button in the main top bar.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-in-app-capture-for-live-video-recording-directly-inside-the-app-using-the-device-camera-integrated-into-the-existing-upload-flow",
+      "title": "Add in-app capture for live video recording directly inside the app using the device camera, integrated into the existing upload flow.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-editing-tools-for-images-and-videos-image-cropping-video-trimming-text-overlays-and-simple-filters-applied-before-upload",
+      "title": "Add basic editing tools for images and videos: image cropping, video trimming, text overlays, and simple filters, applied before upload.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-simplified-in-app-three-step-security-verification-without-email-security-questions-device-confirmation-and-a-pin-challenge-that-is-triggered-when-the-system-detects-suspicious-activity",
+      "title": "Implement a simplified in-app three-step security verification (without email): security questions, device confirmation, and a PIN challenge that is triggered when the system detects suspicious activity.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-ability-for-users-to-download-media-images-videos-from-the-feed-directly-to-their-device-local-storage",
+      "title": "Add the ability for users to download media (images/videos) from the feed directly to their device local storage.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -131,6 +192,30 @@
       "reqIds": [
         "REQ-12"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Add a search button/flow to search across creator handles and captions for both video and image posts (keyword-based).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add in-app capture and editing tools: record live video in-app via device camera; basic editing for images/videos (crop, trim, text overlays, filters) before/after upload.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add three-step security verification (without email): security questions + device confirmation + PIN challenge triggered when suspicious activity is detected.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Allow users to download media (images/videos) from the app directly to their device local storage.",
+      "reqIds": [],
       "status": "pending"
     }
   ],

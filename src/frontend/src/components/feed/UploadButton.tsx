@@ -1,39 +1,37 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Plus } from 'lucide-react';
 import { UploadDialog } from './UploadDialog';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { toast } from 'sonner';
 
-export function UploadButton() {
-  const [open, setOpen] = useState(false);
-  const { identity, login, loginStatus } = useInternetIdentity();
+interface UploadButtonProps {
+  onVerificationRequired?: (action: () => void) => void;
+}
 
-  const handleClick = async () => {
+export function UploadButton({ onVerificationRequired }: UploadButtonProps) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { identity } = useInternetIdentity();
+
+  const handleClick = () => {
     if (!identity) {
       toast.error('Please log in to upload content');
-      try {
-        await login();
-      } catch (error) {
-        console.error('Login error:', error);
-      }
       return;
     }
-    setOpen(true);
+    setDialogOpen(true);
   };
 
   return (
     <>
       <Button
         onClick={handleClick}
-        disabled={loginStatus === 'logging-in'}
-        size="sm"
-        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+        size="icon"
+        variant="ghost"
+        className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 text-white"
       >
-        <Plus className="h-4 w-4 mr-2" />
-        Upload
+        <Plus className="h-6 w-6" />
       </Button>
-      <UploadDialog open={open} onOpenChange={setOpen} />
+      <UploadDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </>
   );
 }

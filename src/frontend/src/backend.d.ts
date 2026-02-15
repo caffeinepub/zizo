@@ -45,5 +45,6 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    searchByKeyword(searchText: string): Promise<Array<FeedItem>>;
     toggleLike(feedItemId: string): Promise<void>;
 }

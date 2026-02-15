@@ -8,15 +8,26 @@ import { toast } from 'sonner';
 export function useFeedItems() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<FeedItem[]>({
+  const query = useQuery<FeedItem[]>({
     queryKey: ['feedItems'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.fetchFeedItems();
+      try {
+        return await actor.fetchFeedItems();
+      } catch (error: any) {
+        console.error('Feed fetch error:', error);
+        throw new Error('Failed to load feed. Please try again.');
+      }
     },
     enabled: !!actor && !actorFetching,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
   });
+
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+  };
 }
 
 export function useUploadMedia() {
@@ -35,26 +46,27 @@ export function useUploadMedia() {
     }) => {
       if (!actor) throw new Error('Actor not available');
 
-      // Read file as bytes
       const arrayBuffer = await file.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
 
-      // Create ExternalBlob with progress tracking
       let blob = ExternalBlob.fromBytes(bytes);
       if (onProgress) {
         blob = blob.withUploadProgress(onProgress);
       }
 
-      // Determine media type
       const isImage = file.type.startsWith('image/');
       const mediaType: MediaType = isImage
         ? { __kind__: 'image', image: blob }
         : { __kind__: 'video', video: blob };
 
-      // Upload to backend
       return actor.addMedia(mediaType, caption);
     },
-    onSuccess: () => {
+    onSuccess: (newItem) => {
+      // Optimistically add to cache
+      queryClient.setQueryData<FeedItem[]>(['feedItems'], (old) => {
+        if (!old) return [newItem];
+        return [newItem, ...old];
+      });
       queryClient.invalidateQueries({ queryKey: ['feedItems'] });
       toast.success('Upload successful!');
     },
@@ -62,6 +74,9 @@ export function useUploadMedia() {
       console.error('Upload error:', error);
       if (error.message?.includes('Unauthorized')) {
         toast.error('Please log in to upload content');
+      } else if (error.message?.includes('verification')) {
+        // Verification required - will be handled by parent
+        throw error;
       } else {
         toast.error('Upload failed. Please try again.');
       }
@@ -81,15 +96,12 @@ export function useToggleLike() {
       return { itemId, wasLiked: currentlyLiked };
     },
     onMutate: async ({ itemId, currentlyLiked }) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['feedItems'] });
       await queryClient.cancelQueries({ queryKey: ['userLikes', identity?.getPrincipal().toString()] });
 
-      // Snapshot previous values
       const previousItems = queryClient.getQueryData<FeedItem[]>(['feedItems']);
       const previousLikes = queryClient.getQueryData<Set<string>>(['userLikes', identity?.getPrincipal().toString()]);
 
-      // Optimistically update items
       queryClient.setQueryData<FeedItem[]>(['feedItems'], (old) => {
         if (!old) return old;
         return old.map((item) => {
@@ -105,7 +117,6 @@ export function useToggleLike() {
         });
       });
 
-      // Optimistically update user likes
       queryClient.setQueryData<Set<string>>(['userLikes', identity?.getPrincipal().toString()], (old) => {
         const newSet = new Set(old || []);
         if (currentlyLiked) {
@@ -119,7 +130,6 @@ export function useToggleLike() {
       return { previousItems, previousLikes };
     },
     onError: (error, _variables, context) => {
-      // Rollback on error
       if (context?.previousItems) {
         queryClient.setQueryData(['feedItems'], context.previousItems);
       }
@@ -130,7 +140,6 @@ export function useToggleLike() {
       console.error('Toggle like error:', error);
     },
     onSuccess: () => {
-      // Refetch to ensure consistency with backend
       queryClient.invalidateQueries({ queryKey: ['feedItems'] });
     },
   });
@@ -142,11 +151,10 @@ export function useUserLikes() {
   return useQuery<Set<string>>({
     queryKey: ['userLikes', identity?.getPrincipal().toString()],
     queryFn: async () => {
-      // Initialize empty set - likes will be tracked through mutations
       return new Set<string>();
     },
     enabled: !!identity,
-    staleTime: Infinity, // Keep in cache indefinitely
+    staleTime: Infinity,
   });
 }
 
@@ -186,6 +194,25 @@ export function useSaveCallerUserProfile() {
     onError: (error) => {
       toast.error('Failed to save profile. Please try again.');
       console.error('Save profile error:', error);
+    },
+  });
+}
+
+export function useSearchFeed() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (searchText: string) => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.searchByKeyword(searchText);
+      } catch (error: any) {
+        console.error('Search error:', error);
+        if (error.message?.includes('Unauthorized')) {
+          throw new Error('Please log in to search');
+        }
+        throw new Error('Search failed. Please try again.');
+      }
     },
   });
 }

@@ -60,6 +60,7 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'searchByKeyword' : ActorMethod<[string], Array<FeedItem>>,
   'toggleLike' : ActorMethod<[string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

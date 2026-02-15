@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef } from 'react';
 import type { FeedItem as FeedItemType } from '../../backend';
 import { FeedOverlay } from './FeedOverlay';
 import { InteractionRail } from './InteractionRail';
@@ -14,7 +14,7 @@ interface FeedItemProps {
   index: number;
 }
 
-export function FeedItem({ item, isActive, index }: FeedItemProps) {
+export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isActive, index }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
@@ -26,7 +26,6 @@ export function FeedItem({ item, isActive, index }: FeedItemProps) {
   const isLiked = userLikes?.has(itemId) || false;
   const isVideo = item.media.__kind__ === 'video';
   
-  // Safely access media URL based on type
   const mediaUrl = isVideo 
     ? (item.media.__kind__ === 'video' ? item.media.video.getDirectURL() : '')
     : (item.media.__kind__ === 'image' ? item.media.image.getDirectURL() : '');
@@ -36,7 +35,6 @@ export function FeedItem({ item, isActive, index }: FeedItemProps) {
       return;
     }
     
-    // Show heart animation on like (not unlike)
     if (!isLiked) {
       setShowHeartAnimation(true);
       setTimeout(() => setShowHeartAnimation(false), 1000);
@@ -73,6 +71,7 @@ export function FeedItem({ item, isActive, index }: FeedItemProps) {
 
   return (
     <div
+      ref={ref}
       data-feed-item
       data-index={index}
       className="relative h-screen w-screen snap-start snap-always bg-black flex items-center justify-center"
@@ -101,7 +100,6 @@ export function FeedItem({ item, isActive, index }: FeedItemProps) {
         style={{ touchAction: 'pan-y' }}
       />
 
-      {/* Heart animation on double-tap like */}
       {showHeartAnimation && (
         <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
           <Heart 
@@ -131,7 +129,12 @@ export function FeedItem({ item, isActive, index }: FeedItemProps) {
         onLike={handleLike}
         isAuthenticated={!!identity}
         isLoading={toggleLikeMutation.isPending}
+        mediaUrl={mediaUrl}
+        itemId={itemId}
+        mediaType={isVideo ? 'video' : 'image'}
       />
     </div>
   );
-}
+});
+
+FeedItem.displayName = 'FeedItem';

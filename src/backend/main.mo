@@ -2,16 +2,15 @@ import Map "mo:core/Map";
 import Set "mo:core/Set";
 import List "mo:core/List";
 import Text "mo:core/Text";
+import Char "mo:core/Char";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import Migration "migration";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
+import Iter "mo:core/Iter";
 
-// Use migration code for backend upgrade
-(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -39,7 +38,7 @@ actor {
 
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // User profile management functions
+  // Security: Only admins and users can access profile data
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users access profiles");
@@ -118,11 +117,8 @@ actor {
     feedItems.addAll(updatedFeedItems.values());
 
     if (userHasLiked) {
-      // Remove the user's like using a custom method
       switch (userLikes.get(feedItemId)) {
-        case (null) {
-          // This shouldn't happen since userHasLiked was true, but handle gracefully
-        };
+        case (null) { };
         case (?likes) {
           let newLikes = Set.empty<Principal>();
           for (user in likes.values()) {
@@ -134,7 +130,6 @@ actor {
         };
       };
     } else {
-      // Add the user's like
       let newLikes = switch (userLikes.get(feedItemId)) {
         case (null) {
           let newSet = Set.empty<Principal>();
@@ -152,5 +147,29 @@ actor {
       };
       userLikes.add(feedItemId, newLikes);
     };
+  };
+
+  func toLower(text : Text) : Text {
+    text.map(
+      func(char) {
+        if (char >= 'A' and char <= 'Z') {
+          Char.fromNat32(char.toNat32() + 32);
+        } else {
+          char;
+        };
+      }
+    );
+  };
+
+  // User-only: Search requires authentication
+  public query ({ caller }) func searchByKeyword(searchText : Text) : async [FeedItem] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Must be user or above to search");
+    };
+
+    feedItems.filter(func(item) {
+      toLower(item.handle).contains(#text(toLower(searchText))) or
+      toLower(item.caption).contains(#text(toLower(searchText)))
+    }).toArray();
   };
 };

@@ -1,130 +1,154 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T16:02:29.836Z",
+  "generatedAt": "2026-02-15T16:46:23.436Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 3,
+    "total": 7,
+    "implemented": 7,
     "items": [
       {
-        "id": "REQ-10",
-        "summary": "Update the feed rendering to support both video posts and image posts in the same vertically paged, full-screen feed, preserving existing overlays and interaction rail behaviors where applicable.",
+        "id": "REQ-13",
+        "summary": "Fix the feed sometimes rendering as completely empty by making feed loading resilient and diagnosable: ensure the app always attempts to fetch `fetchFeedItems()` when an actor is available (anonymous or authenticated), and surface actionable error details (without exposing sensitive data) when the fetch fails.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/feed/VideoFeed.tsx",
-          "frontend/src/components/feed/VideoFeedItem.tsx",
-          "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/FeedOverlay.tsx",
-          "frontend/src/components/feed/InteractionRail.tsx",
-          "frontend/src/components/feed/SpeedControl.tsx"
+          "frontend/src/components/feed/VideoFeed.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/feed/VideoFeed.tsx",
-          "frontend/src/components/feed/VideoFeedItem.tsx",
-          "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/FeedOverlay.tsx",
-          "frontend/src/components/feed/InteractionRail.tsx"
+          "frontend/src/components/feed/VideoFeed.tsx"
         ]
       },
       {
-        "id": "REQ-11",
-        "summary": "Add a mobile-app-like experience for the web app by enabling installability as a PWA and ensuring the UI feels app-like on mobile (safe-area spacing, full-screen layout stability, and touch-first controls).",
+        "id": "REQ-14",
+        "summary": "Improve upload UX so users always receive clear progress + completion feedback and their new post becomes visible immediately after upload succeeds.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/manifest.webmanifest",
-          "frontend/public/sw.js",
-          "frontend/index.html",
-          "frontend/src/App.tsx",
-          "frontend/src/index.css",
-          "frontend/public/assets/generated/zizo-app-icon.dim_512x512.png",
-          "frontend/public/assets/generated/zizo-app-icon.dim_192x192.png",
-          "frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/feed/UploadDialog.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/manifest.webmanifest",
-          "frontend/public/sw.js",
-          "frontend/index.html",
-          "frontend/src/App.tsx",
-          "frontend/src/index.css",
-          "frontend/public/assets/generated/zizo-app-icon.dim_512x512.png",
-          "frontend/public/assets/generated/zizo-app-icon.dim_192x192.png",
-          "frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/feed/UploadDialog.tsx"
         ]
       },
       {
-        "id": "REQ-12",
-        "summary": "If backend state shape must change to support mixed media feed items, add a conditional Motoko migration that preserves existing stored feed items and like counts during upgrade.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Update the backend data model and APIs to support user-generated uploads (both videos and pictures) that appear immediately in the global feed for everyone.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Remove the current admin-only restriction for adding content to the feed, replacing it with: any authenticated user can upload media (video or image) into the global feed; guests cannot upload.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-9",
-        "summary": "Add a frontend upload entry point (upload button) that is visible on both mobile and desktop, allowing authenticated users to upload videos and pictures with a caption; after upload completes, the new post appears immediately in the global feed.",
+        "id": "REQ-15",
+        "summary": "Add keyword search for both videos and images across captions and creator handles, accessible via a Search button in the main top bar.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/feed/UploadButton.tsx",
-          "frontend/src/components/feed/UploadDialog.tsx",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/App.tsx",
-          "frontend/src/components/auth/LoginButton.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/feed/UploadButton.tsx",
-          "frontend/src/components/feed/UploadDialog.tsx",
-          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/search/SearchButton.tsx",
+          "frontend/src/components/search/SearchDialog.tsx",
+          "frontend/src/hooks/useSearch.ts",
+          "frontend/src/components/feed/VideoFeed.tsx",
           "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/search/SearchButton.tsx",
+          "frontend/src/components/search/SearchDialog.tsx",
+          "frontend/src/components/feed/VideoFeed.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-16",
+        "summary": "Add in-app capture for live video recording directly inside the app using the device camera, integrated into the existing upload flow.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/capture/VideoCapturePanel.tsx",
+          "frontend/src/components/feed/UploadDialog.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/capture/VideoCapturePanel.tsx",
+          "frontend/src/components/feed/UploadDialog.tsx"
+        ]
+      },
+      {
+        "id": "REQ-17",
+        "summary": "Add basic editing tools for images and videos: image cropping, video trimming, text overlays, and simple filters, applied before upload.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/editor/MediaEditorDialog.tsx",
+          "frontend/src/utils/mediaEdits.ts",
+          "frontend/src/components/feed/UploadDialog.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/editor/MediaEditorDialog.tsx",
+          "frontend/src/utils/mediaEdits.ts",
+          "frontend/src/components/feed/UploadDialog.tsx"
+        ]
+      },
+      {
+        "id": "REQ-18",
+        "summary": "Implement a simplified in-app three-step security verification (without email): security questions, device confirmation, and a PIN challenge that is triggered when the system detects suspicious activity.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useDeviceTrust.ts",
+          "frontend/src/components/security/SecuritySetupDialog.tsx",
+          "frontend/src/components/security/PinChallengeDialog.tsx",
+          "frontend/src/hooks/useVerificationGate.ts",
+          "frontend/src/App.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useDeviceTrust.ts",
+          "frontend/src/components/security/SecuritySetupDialog.tsx",
+          "frontend/src/components/security/PinChallengeDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ]
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Add the ability for users to download media (images/videos) from the feed directly to their device local storage.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/downloadMedia.ts",
+          "frontend/src/components/feed/InteractionRail.tsx",
+          "frontend/src/components/feed/FeedItem.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/downloadMedia.ts",
+          "frontend/src/components/feed/InteractionRail.tsx",
+          "frontend/src/components/feed/FeedItem.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png",
-    "frontend/public/assets/generated/zizo-app-icon.dim_192x192.png",
-    "frontend/public/assets/generated/zizo-app-icon.dim_512x512.png",
-    "frontend/public/manifest.webmanifest",
-    "frontend/public/sw.js",
     "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/camera/useCamera.ts",
+    "frontend/src/components/capture/VideoCapturePanel.tsx",
+    "frontend/src/components/editor/MediaEditorDialog.tsx",
     "frontend/src/components/feed/FeedItem.tsx",
-    "frontend/src/components/feed/FeedOverlay.tsx",
     "frontend/src/components/feed/InteractionRail.tsx",
     "frontend/src/components/feed/UploadButton.tsx",
     "frontend/src/components/feed/UploadDialog.tsx",
     "frontend/src/components/feed/VideoFeed.tsx",
-    "frontend/src/components/feed/VideoFeedItem.tsx",
+    "frontend/src/components/search/SearchButton.tsx",
+    "frontend/src/components/search/SearchDialog.tsx",
+    "frontend/src/components/security/PinChallengeDialog.tsx",
+    "frontend/src/components/security/SecurityButton.tsx",
+    "frontend/src/components/security/SecuritySetupDialog.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useDeviceTrust.ts",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/index.css",
+    "frontend/src/hooks/useSecuritySetup.ts",
+    "frontend/src/utils/downloadMedia.ts",
+    "frontend/src/utils/mediaEdits.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

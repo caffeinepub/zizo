@@ -78,6 +78,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'searchByKeyword' : IDL.Func([IDL.Text], [IDL.Vec(FeedItem)], ['query']),
   'toggleLike' : IDL.Func([IDL.Text], [], []),
 });
 
@@ -154,6 +155,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'searchByKeyword' : IDL.Func([IDL.Text], [IDL.Vec(FeedItem)], ['query']),
     'toggleLike' : IDL.Func([IDL.Text], [], []),
   });
 };

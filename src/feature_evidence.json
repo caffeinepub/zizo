@@ -2,11 +2,31 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-frontend-upload-entry-point-upload-button-that-is-visible-on-both-mobile-and-desktop-allowing-authenticated-users-to-upload-videos-and-pictures-with-a-caption-after-upload-completes-the-new-post-appears-immediately-in-the-global-feed",
-      "featureTitle": "Add a frontend upload entry point (upload button) that is visible on both mobile and desktop, allowing authenticated users to upload videos and pictures with a caption; after upload completes, the new post appears immediately in the global feed.",
+      "featureId": "feature-fix-the-feed-sometimes-rendering-as-completely-empty-by-making-feed-loading-resilient-and-diagnosable-ensure-the-app-always-attempts-to-fetch-fetchfeeditems-when-an-actor-is-available-anonymous-or-authenticated-and-surface-actionable-error-details-without-exposing-sensitive-data-when-the-fetch-fails",
+      "featureTitle": "Fix the feed sometimes rendering as completely empty by making feed loading resilient and diagnosable: ensure the app always attempts to fetch `fetchFeedItems()` when an actor is available (anonymous or authenticated), and surface actionable error details (without exposing sensitive data) when the fetch fails.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/feed/UploadButton.tsx",
+        "frontend/src/components/feed/VideoFeed.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-improve-upload-ux-so-users-always-receive-clear-progress-completion-feedback-and-their-new-post-becomes-visible-immediately-after-upload-succeeds",
+      "featureTitle": "Improve upload UX so users always receive clear progress + completion feedback and their new post becomes visible immediately after upload succeeds.",
+      "files": [
         "frontend/src/components/feed/UploadDialog.tsx",
         "frontend/src/hooks/useQueries.ts"
       ],
@@ -17,22 +37,91 @@
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
         "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-9"
+        "REQ-14"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-feed-rendering-to-support-both-video-posts-and-image-posts-in-the-same-vertically-paged-full-screen-feed-preserving-existing-overlays-and-interaction-rail-behaviors-where-applicable",
-      "featureTitle": "Update the feed rendering to support both video posts and image posts in the same vertically paged, full-screen feed, preserving existing overlays and interaction rail behaviors where applicable.",
+      "featureId": "feature-add-keyword-search-for-both-videos-and-images-across-captions-and-creator-handles-accessible-via-a-search-button-in-the-main-top-bar",
+      "featureTitle": "Add keyword search for both videos and images across captions and creator handles, accessible via a Search button in the main top bar.",
       "files": [
-        "frontend/src/components/feed/FeedItem.tsx",
-        "frontend/src/components/feed/FeedOverlay.tsx",
-        "frontend/src/components/feed/InteractionRail.tsx",
+        "frontend/src/App.tsx",
         "frontend/src/components/feed/VideoFeed.tsx",
-        "frontend/src/components/feed/VideoFeedItem.tsx",
+        "frontend/src/components/search/SearchButton.tsx",
+        "frontend/src/components/search/SearchDialog.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-15"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-in-app-capture-for-live-video-recording-directly-inside-the-app-using-the-device-camera-integrated-into-the-existing-upload-flow",
+      "featureTitle": "Add in-app capture for live video recording directly inside the app using the device camera, integrated into the existing upload flow.",
+      "files": [
+        "frontend/src/components/capture/VideoCapturePanel.tsx",
+        "frontend/src/components/feed/UploadDialog.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-16"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-basic-editing-tools-for-images-and-videos-image-cropping-video-trimming-text-overlays-and-simple-filters-applied-before-upload",
+      "featureTitle": "Add basic editing tools for images and videos: image cropping, video trimming, text overlays, and simple filters, applied before upload.",
+      "files": [
+        "frontend/src/components/editor/MediaEditorDialog.tsx",
+        "frontend/src/components/feed/UploadDialog.tsx",
+        "frontend/src/utils/mediaEdits.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-17"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-simplified-in-app-three-step-security-verification-without-email-security-questions-device-confirmation-and-a-pin-challenge-that-is-triggered-when-the-system-detects-suspicious-activity",
+      "featureTitle": "Implement a simplified in-app three-step security verification (without email): security questions, device confirmation, and a PIN challenge that is triggered when the system detects suspicious activity.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/security/PinChallengeDialog.tsx",
+        "frontend/src/components/security/SecuritySetupDialog.tsx",
+        "frontend/src/hooks/useDeviceTrust.ts",
         "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
@@ -42,22 +131,21 @@
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
         "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-10"
+        "REQ-18"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-mobile-app-like-experience-for-the-web-app-by-enabling-installability-as-a-pwa-and-ensuring-the-ui-feels-app-like-on-mobile-safe-area-spacing-full-screen-layout-stability-and-touch-first-controls",
-      "featureTitle": "Add a mobile-app-like experience for the web app by enabling installability as a PWA and ensuring the UI feels app-like on mobile (safe-area spacing, full-screen layout stability, and touch-first controls).",
+      "featureId": "feature-add-the-ability-for-users-to-download-media-images-videos-from-the-feed-directly-to-their-device-local-storage",
+      "featureTitle": "Add the ability for users to download media (images/videos) from the feed directly to their device local storage.",
       "files": [
-        "frontend/index.html",
-        "frontend/public/manifest.webmanifest",
-        "frontend/public/sw.js",
-        "frontend/src/App.tsx",
-        "frontend/src/index.css"
+        "frontend/src/components/feed/FeedItem.tsx",
+        "frontend/src/components/feed/InteractionRail.tsx",
+        "frontend/src/utils/downloadMedia.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -66,10 +154,11 @@
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
         "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-11"
+        "REQ-19"
       ],
       "confidence": "high"
     }
