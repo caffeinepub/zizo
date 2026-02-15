@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: oklch(0.13 0.02 270);
+    --foreground: oklch(0.98 0.01 270);
+    --card: oklch(0.13 0.02 270);
+    --card-foreground: oklch(0.98 0.01 270);
+    --popover: oklch(0.13 0.02 270);
+    --popover-foreground: oklch(0.98 0.01 270);
+    --primary: oklch(0.65 0.28 330);
+    --primary-foreground: oklch(0.98 0.01 330);
+    --secondary: oklch(0.25 0.04 270);
+    --secondary-foreground: oklch(0.98 0.01 270);
+    --muted: oklch(0.25 0.04 270);
+    --muted-foreground: oklch(0.65 0.02 270);
+    --accent: oklch(0.65 0.28 330);
+    --accent-foreground: oklch(0.98 0.01 330);
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.98 0.01 25);
+    --border: oklch(0.25 0.04 270);
+    --input: oklch(0.25 0.04 270);
+    --ring: oklch(0.65 0.28 330);
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: oklch(0.13 0.02 270);
+    --foreground: oklch(0.98 0.01 270);
+    --card: oklch(0.13 0.02 270);
+    --card-foreground: oklch(0.98 0.01 270);
+    --popover: oklch(0.13 0.02 270);
+    --popover-foreground: oklch(0.98 0.01 270);
+    --primary: oklch(0.65 0.28 330);
+    --primary-foreground: oklch(0.98 0.01 330);
+    --secondary: oklch(0.25 0.04 270);
+    --secondary-foreground: oklch(0.98 0.01 270);
+    --muted: oklch(0.25 0.04 270);
+    --muted-foreground: oklch(0.65 0.02 270);
+    --accent: oklch(0.65 0.28 330);
+    --accent-foreground: oklch(0.98 0.01 330);
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.98 0.01 25);
+    --border: oklch(0.25 0.04 270);
+    --input: oklch(0.25 0.04 270);
+    --ring: oklch(0.65 0.28 330);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Full-screen layout utilities */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hide scrollbars */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* PWA safe area support */
+.safe-area-container {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Stable viewport height for mobile */
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+}
+
+/* Prevent overscroll bounce on iOS */
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch-optimized scrolling */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

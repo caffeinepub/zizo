@@ -1,0 +1,32 @@
+{
+  "name": "ZIZO - Share Your Moments",
+  "short_name": "ZIZO",
+  "description": "Share videos and images with the community",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a0a1f",
+  "theme_color": "#1a0a1f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/generated/zizo-app-icon.dim_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/generated/zizo-app-icon.dim_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/generated/zizo-app-icon-maskable.dim_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["social", "photo", "video"],
+  "screenshots": []
+}

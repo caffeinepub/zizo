@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Expand the simplified TikTok-style vertical video feed to include a mobile-app experience and user-generated content: allow anyone to upload videos and pictures via an upload button, with uploads appearing immediately in the global feed.",
+  "architectural_notes": [
+    "Target platform is web (React) rather than Expo/React Native.",
+    "Core experience: vertical, full-screen, swipe/scroll paging video feed (TikTok-style).",
+    "Backend should be implemented as a canister (for the like API and feed metadata)."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- App icon (zizo-app-icon.dim_512x512.png)\n- App icon (zizo-app-icon.dim_192x192.png)\n- Maskable app icon (zizo-app-icon-maskable.dim_512x512.png)",
+  "existing_features": [
+    {
+      "id": "feature-create-a-full-screen-vertically-paged-video-feed-ui-one-video-per-screen-that-works-in-modern-desktop-and-mobile-browsers-using-scroll-snap-or-equivalent-so-each-swipe-scroll-lands-on-the-next-previous-video",
+      "title": "Create a full-screen, vertically paged video feed UI (one video per screen) that works in modern desktop and mobile browsers, using scroll-snap or equivalent so each swipe/scroll lands on the next/previous video.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-video-playback-behavior-similar-to-tiktok-only-the-currently-active-in-view-video-should-play-automatically-all-other-videos-must-be-paused-videos-should-be-muted-by-default-loop-and-load-efficiently-avoid-downloading-all-videos-at-once",
+      "title": "Implement video playback behavior similar to TikTok: only the currently active (in-view) video should play automatically; all other videos must be paused. Videos should be muted by default, loop, and load efficiently (avoid downloading all videos at once).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-per-video-overlay-ui-elements-creator-handle-caption-text-and-an-interaction-rail-like-button-like-count-optional-comment-placeholder-button-share-placeholder-button-add-double-click-double-tap-on-the-video-area-to-like",
+      "title": "Add per-video overlay UI elements: creator handle, caption text, and an interaction rail (Like button + like count, optional Comment placeholder button, Share placeholder button). Add double-click/double-tap on the video area to like.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-simple-playback-speed-control-for-the-active-video-e-g-0-5-1-2-accessible-from-the-overlay-ui-and-apply-it-to-the-html-video-playback-rate",
+      "title": "Add a simple playback speed control for the active video (e.g., 0.5× / 1× / 2×), accessible from the overlay UI, and apply it to the HTML video playback rate.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-minimal-backend-api-to-supply-the-feed-and-persist-likes-store-a-list-of-video-metadata-id-videourl-handle-caption-likecount-and-expose-endpoints-to-1-fetch-feed-items-and-2-toggle-like-for-a-given-video-for-the-current-user-identity",
+      "title": "Implement a minimal backend API to supply the feed and persist likes: store a list of video metadata (id, videoUrl, handle, caption, likeCount) and expose endpoints to (1) fetch feed items and (2) toggle like for a given video for the current user identity.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-coherent-distinctive-visual-theme-for-a-tiktok-like-dark-feed-experience-colors-typography-spacing-and-button-styling-and-apply-it-consistently-across-the-feed-ui",
+      "title": "Add a coherent, distinctive visual theme for a TikTok-like dark feed experience (colors, typography, spacing, and button styling) and apply it consistently across the feed UI.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-frontend-upload-entry-point-upload-button-that-is-visible-on-both-mobile-and-desktop-allowing-authenticated-users-to-upload-videos-and-pictures-with-a-caption-after-upload-completes-the-new-post-appears-immediately-in-the-global-feed",
+      "title": "Add a frontend upload entry point (upload button) that is visible on both mobile and desktop, allowing authenticated users to upload videos and pictures with a caption; after upload completes, the new post appears immediately in the global feed.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-feed-rendering-to-support-both-video-posts-and-image-posts-in-the-same-vertically-paged-full-screen-feed-preserving-existing-overlays-and-interaction-rail-behaviors-where-applicable",
+      "title": "Update the feed rendering to support both video posts and image posts in the same vertically paged, full-screen feed, preserving existing overlays and interaction rail behaviors where applicable.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-mobile-app-like-experience-for-the-web-app-by-enabling-installability-as-a-pwa-and-ensuring-the-ui-feels-app-like-on-mobile-safe-area-spacing-full-screen-layout-stability-and-touch-first-controls",
+      "title": "Add a mobile-app-like experience for the web app by enabling installability as a PWA and ensuring the UI feels app-like on mobile (safe-area spacing, full-screen layout stability, and touch-first controls).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement a simplified TikTok-style vertical video feed for the browser (web app UI/flow).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add an advanced version including overlays + like API backed by a backend canister.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Create a mobile app form of the product (mobile-first, app-like experience rather than only a browser web app).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add user uploads for videos and pictures: provide an upload button on both mobile and desktop, and publish uploads immediately into the global feed for everyone.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Update the backend data model and APIs to support user-generated uploads (both videos and pictures) that appear immediately in the global feed for everyone.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Remove the current admin-only restriction for adding content to the feed, replacing it with: any authenticated user can upload media (video or image) into the global feed; guests cannot upload.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "If backend state shape must change to support mixed media feed items, add a conditional Motoko migration that preserves existing stored feed items and like counts during upgrade.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "ZIZO",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

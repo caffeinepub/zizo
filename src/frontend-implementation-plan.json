@@ -1,0 +1,143 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "User media uploads, mixed-media feed rendering, and PWA installability",
+  "requirements": [
+    {
+      "id": "REQ-9",
+      "summary": "Add an upload entry point in the main feed UI for authenticated users to post an image or video with a caption and refresh the feed immediately after success.",
+      "acceptanceCriteria": [
+        "An upload button is visible in the main feed UI on both mobile and desktop viewports.",
+        "Click/tap opens an upload UI that allows selecting either an image file or a video file, plus entering a caption.",
+        "If the user is not logged in and tries to upload, the UI prompts them to log in (using the existing Internet Identity flow) and does not attempt upload.",
+        "After a successful upload, the feed refreshes (or is optimistically updated) so the newly uploaded item is visible without a full page reload."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/feed/UploadButton.tsx",
+          "operation": "create",
+          "description": "Create an always-visible upload button (mobile + desktop) that opens an upload UI (e.g., dialog/sheet) for selecting image/video and entering a caption; use shadcn-ui components (e.g., Button/Dialog/Input) to match existing UI. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/UploadDialog.tsx",
+          "operation": "create",
+          "description": "Implement the upload UI used by UploadButton: file picker supporting images/videos, caption input, client-side validation, upload progress display, and success/error feedback in English; integrate blob-storage ExternalBlob creation from selected file bytes and upload progress via withUploadProgress. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a React Query mutation hook to upload new media (calling the backend capability to add media with caption) and invalidate/refresh the unified feed query on success; wire upload errors (including auth traps) to user-facing toasts in English. Use the blob-storage ExternalBlob helper on the frontend for upload bytes/progress. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the new UploadButton into the existing main feed UI so it is visible on both mobile and desktop; when unauthenticated and user initiates upload, trigger the existing Internet Identity login flow (authorization component guidance) and avoid attempting upload until authenticated. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "operation": "modify",
+          "description": "Ensure the login flow can be triggered from the upload prompt path (reuse existing Internet Identity flow), and that user-facing text remains English; keep behavior consistent with authorization component guidance (clear cached data on logout). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Update the vertically paged full-screen feed to render a unified list containing both video posts and image posts while preserving overlays and interaction rail behaviors and like toggling.",
+      "acceptanceCriteria": [
+        "Video items keep the current behavior: only the active item auto-plays; others are paused; muted by default; loop; efficient preload.",
+        "Image items render full-screen with the same overlay layout (handle + caption) and interaction rail without attempting video playback.",
+        "Scroll-snap paging continues to behave as one item per screen for both image and video items.",
+        "Like toggling works for both image and video items (subject to existing auth rules for likes)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Replace the feed-fetching hook to use the unified feed item list (image+video) from the backend interface, update query keys accordingly, and ensure like toggling invalidates/refetches the unified feed list; keep toast messages in English. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/VideoFeed.tsx",
+          "operation": "modify",
+          "description": "Refactor the feed container to render a unified list of feed items (not video-only), keeping the intersection observer logic to track the active item for auto-play behavior; preserve scroll-snap paging for both media types. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/VideoFeedItem.tsx",
+          "operation": "rename",
+          "description": "Rename this component to a media-agnostic feed item renderer to support both video and image items while preserving existing overlay/rail behaviors and touch interactions; ensure it is still wired from the feed list. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/FeedItem.tsx",
+          "operation": "create",
+          "description": "Create the unified feed item renderer that: (1) renders video full-screen with current auto-play/pause/mute/loop/preload logic based on active state, using blob-storage ExternalBlob direct URL access; (2) renders image full-screen without playback; (3) preserves overlay (handle+caption) and interaction rail; (4) supports double-tap like on the media surface. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/FeedOverlay.tsx",
+          "operation": "modify",
+          "description": "Ensure the overlay layout works consistently for both image and video items (handle + caption + optional active-only controls) without relying on video-only assumptions; keep English-only text. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/InteractionRail.tsx",
+          "operation": "modify",
+          "description": "Make interaction text/media-agnostic (e.g., adjust like prompt copy from 'videos' to 'posts') and ensure like toggling flows work for both image and video items using existing auth checks and toast feedback in English. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/feed/SpeedControl.tsx",
+          "operation": "modify",
+          "description": "Ensure speed control is shown only for active video items and is not rendered for image items; keep behavior unchanged for videos. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Enable PWA installability and improve mobile app-like behavior (safe-area spacing, stable full-height layout, touch-first controls) while keeping all user-facing text in English.",
+      "acceptanceCriteria": [
+        "App includes a valid web app manifest and registers a service worker so the app is installable on supported mobile browsers.",
+        "PWA metadata (name, short name, icons, theme/background colors) is configured for the app.",
+        "The top UI and main feed layout avoid common mobile browser viewport issues (e.g., stable full-height behavior and touch-first interaction).",
+        "User-facing text remains in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/manifest.webmanifest",
+          "operation": "create",
+          "description": "Add a valid web app manifest with app name/short_name, start_url, display mode, theme/background colors, and icons referencing the generated assets at frontend/public/assets/generated/zizo-app-icon.dim_192x192.png and frontend/public/assets/generated/zizo-app-icon.dim_512x512.png and frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png."
+        },
+        {
+          "path": "frontend/public/sw.js",
+          "operation": "create",
+          "description": "Add a basic service worker to enable installability (registerable by the app) and provide minimal offline/static caching appropriate for a feed app (without changing backend behaviors)."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Wire PWA metadata into the HTML: link the manifest, set theme-color/background-color meta, and link icon assets (including maskable where applicable) using the generated files: frontend/public/assets/generated/zizo-app-icon.dim_192x192.png, frontend/public/assets/generated/zizo-app-icon.dim_512x512.png, frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the service worker on app start (without modifying frontend/src/main.tsx per constraints), and adjust the top bar/feed container to behave well on mobile (safe-area padding, stable full-height) while keeping the existing UI structure. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add mobile app-like CSS improvements: safe-area inset handling (padding for top/bottom overlays), stable viewport height strategy (prefer dvh where available), prevent overscroll bounce issues where appropriate, and touch-first defaults (e.g., ensure vertical pan gestures remain smooth) while preserving existing Tailwind setup."
+        },
+        {
+          "path": "frontend/public/assets/generated/zizo-app-icon.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated PWA app icon asset and ensure it is referenced by the manifest and HTML metadata."
+        },
+        {
+          "path": "frontend/public/assets/generated/zizo-app-icon.dim_192x192.png",
+          "operation": "create",
+          "description": "Add the generated PWA app icon asset and ensure it is referenced by the manifest and HTML metadata."
+        },
+        {
+          "path": "frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated maskable PWA app icon asset and ensure it is referenced by the manifest and HTML metadata."
+        }
+      ]
+    }
+  ]
+}

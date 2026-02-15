@@ -1,0 +1,159 @@
+{
+  "kind": "build_request",
+  "title": "Add user uploads (videos + pictures) to global feed and mobile-app-like experience",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-7",
+      "text": "Update the backend data model and APIs to support user-generated uploads (both videos and pictures) that appear immediately in the global feed for everyone.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-recent-7",
+          "msg-recent-10"
+        ],
+        "quotes": [
+          "Make it in such a way that anyone can upload videos and pictures",
+          "All of the above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes an authenticated API that allows a logged-in user to create a new feed item by uploading either a video file or an image file, with caption text.",
+        "Uploads are persisted in-canister (using the existing blob-storage mixin) and are retrievable by URL/reference usable by the frontend.",
+        "New uploads become visible via the existing feed-fetching API without requiring admin permissions.",
+        "Feed-fetching remains readable by everyone (including guests), and returns both video and image items in a single unified list.",
+        "Existing like toggling continues to work for items in the feed."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Remove the current admin-only restriction for adding content to the feed, replacing it with: any authenticated user can upload media (video or image) into the global feed; guests cannot upload.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-recent-7",
+          "msg-recent-10"
+        ],
+        "quotes": [
+          "Make it in such a way that anyone can upload videos and pictures",
+          "All of the above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Attempting to upload while not authenticated fails with a clear error (trap) and does not mutate state.",
+        "Any authenticated Internet Identity user can successfully upload a video or image and see it in subsequent feed results.",
+        "No admin role is required to upload content to the global feed."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Add a frontend upload entry point (upload button) that is visible on both mobile and desktop, allowing authenticated users to upload videos and pictures with a caption; after upload completes, the new post appears immediately in the global feed.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-recent-9",
+          "msg-recent-10"
+        ],
+        "quotes": [
+          "I also want new pictures added for mobile like an upload button for pictures and videos",
+          "All of the above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "An upload button is visible in the main feed UI on both mobile and desktop viewports.",
+        "Click/tap opens an upload UI that allows selecting either an image file or a video file, plus entering a caption.",
+        "If the user is not logged in and tries to upload, the UI prompts them to log in (using the existing Internet Identity flow) and does not attempt upload.",
+        "After a successful upload, the feed refreshes (or is optimistically updated) so the newly uploaded item is visible without a full page reload."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Update the feed rendering to support both video posts and image posts in the same vertically paged, full-screen feed, preserving existing overlays and interaction rail behaviors where applicable.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-recent-7"
+        ],
+        "quotes": [
+          "Make it in such a way that anyone can upload videos and pictures"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Video items keep the current behavior: only the active item auto-plays; others are paused; muted by default; loop; efficient preload.",
+        "Image items render full-screen with the same overlay layout (handle + caption) and interaction rail without attempting video playback.",
+        "Scroll-snap paging continues to behave as one item per screen for both image and video items.",
+        "Like toggling works for both image and video items (subject to existing auth rules for likes)."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Add a mobile-app-like experience for the web app by enabling installability as a PWA and ensuring the UI feels app-like on mobile (safe-area spacing, full-screen layout stability, and touch-first controls).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-recent-8",
+          "msg-recent-11"
+        ],
+        "quotes": [
+          "A mobile app form",
+          "Build now"
+        ]
+      },
+      "acceptanceCriteria": [
+        "App includes a valid web app manifest and registers a service worker so the app is installable on supported mobile browsers.",
+        "PWA metadata (name, short name, icons, theme/background colors) is configured for the app.",
+        "The top UI and main feed layout avoid common mobile browser viewport issues (e.g., stable full-height behavior and touch-first interaction).",
+        "User-facing text remains in English."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "If backend state shape must change to support mixed media feed items, add a conditional Motoko migration that preserves existing stored feed items and like counts during upgrade.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-recent-10"
+        ],
+        "quotes": [
+          "All of the above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On upgrade, previously stored feed items are preserved and remain visible in the feed.",
+        "Existing like counts are preserved after upgrade.",
+        "Migration only runs when needed (conditional), consistent with the project migration policy."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor with all logic in backend/main.mo (single-actor architecture).",
+    "Do not modify frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui/* (compose these components instead).",
+    "Use English for any user-facing text."
+  ],
+  "nonGoals": [
+    "Packaging as a native iOS/Android app (App Store / Play Store) or using React Native/Expo.",
+    "Adding comments, DMs, real-time chat, or push notifications.",
+    "Third-party authentication providers beyond Internet Identity.",
+    "External database or external object storage; uploads must be stored within the canister capabilities already present in the project."
+  ],
+  "imageRequirements": {
+    "required": [
+      "App icon (zizo-app-icon.dim_512x512.png)",
+      "App icon (zizo-app-icon.dim_192x192.png)",
+      "Maskable app icon (zizo-app-icon-maskable.dim_512x512.png)"
+    ],
+    "edits": [
+      ""
+    ]
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

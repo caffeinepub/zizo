@@ -1,0 +1,20 @@
+{
+  "frontend/src/App.tsx": "Main application component that handles authentication state, profile setup flow, service worker registration for PWA, and renders the feed with upload button, login button, and toast notifications with safe-area support.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for fetching unified feed items (images+videos), uploading media with ExternalBlob and progress tracking, toggling likes with optimistic updates, and managing user profiles with error handling and cache invalidation.",
+  "frontend/src/components/feed/VideoFeed.tsx": "Container component that renders the unified vertical scrolling feed with snap behavior, intersection observer for active item detection, and loading/error/empty states.",
+  "frontend/src/components/feed/VideoFeedItem.tsx": "Individual video item component that manages video playback, playback rate, like state synced with backend, double-tap interactions with heart animation, and proper lifecycle handling.",
+  "frontend/src/components/feed/FeedOverlay.tsx": "Overlay component that displays creator handle, caption text, and conditionally renders speed control only for active video items with gradient background and safe-area support.",
+  "frontend/src/components/feed/InteractionRail.tsx": "Right-side interaction rail with like, comment, and share buttons positioned vertically with proper authentication checks, loading states, formatted like counts, and media-agnostic copy with safe-area support.",
+  "frontend/src/components/feed/SpeedControl.tsx": "Dropdown menu component for selecting video playback speed (0.5×, 1×, 1.5×, 2×) with visual feedback for current selection, only shown for video items.",
+  "frontend/src/components/auth/LoginButton.tsx": "Authentication button component that handles login/logout flow with Internet Identity and clears query cache on logout.",
+  "frontend/src/components/auth/ProfileSetup.tsx": "Profile setup modal that prompts new users to enter their name before accessing the app with form validation.",
+  "frontend/src/hooks/useDoubleTap.ts": "Custom hook that detects double-click (desktop) and double-tap (mobile) gestures with configurable delay for like interactions.",
+  "frontend/src/index.css": "Global styles with OKLCH-based dark theme color system, full-screen layout utilities, PWA safe-area inset handling, stable viewport height strategy using dvh, overscroll prevention, and touch-optimized scrolling.",
+  "frontend/tailwind.config.js": "Tailwind configuration with extended color palette using magenta/pink primary accent, custom font stack, and animation utilities for the TikTok-style interface.",
+  "frontend/src/components/feed/UploadButton.tsx": "Upload button component that triggers login if unauthenticated and opens the upload dialog for authenticated users to share content.",
+  "frontend/src/components/feed/UploadDialog.tsx": "Upload dialog component with file picker supporting images/videos, caption input, client-side validation, upload progress display using ExternalBlob with progress tracking, and success/error feedback.",
+  "frontend/src/components/feed/FeedItem.tsx": "Unified feed item renderer that displays both video (with auto-play/pause/mute/loop/preload) and image items full-screen using proper type guards for discriminated union access, preserves overlay and interaction rail, supports double-tap like with heart animation, and uses ExternalBlob direct URLs.",
+  "frontend/index.html": "HTML entry point with PWA metadata including manifest link, theme colors, viewport-fit for safe areas, and icon references for installability.",
+  "frontend/public/manifest.webmanifest": "PWA web app manifest with app metadata, display mode, theme colors, and icon references for installability on mobile devices.",
+  "frontend/public/sw.js": "Service worker for PWA installability with static asset caching, network-first strategy with cache fallback, and offline support for navigation requests."
+}

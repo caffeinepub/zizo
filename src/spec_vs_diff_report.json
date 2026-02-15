@@ -1,0 +1,47 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-15T16:02:29.833Z",
+  "summary": "Diff implements unified image+video feed items on backend and frontend, adds authenticated upload UI with caption and progress, and adds PWA manifest + service worker registration with safe-area/mobile viewport CSS. However, backend migration does not preserve existing feed items/like counts, and required app icon image assets are not shown as added.",
+  "missing_requirements": [
+    {
+      "id": "REQ-12",
+      "requirement": "Add a conditional Motoko migration that preserves existing stored feed items and like counts during upgrade when state shape changes for mixed media.",
+      "reason": "The added migration returns an empty feedItems list and does not transform OldVideo entries into NewFeedItem entries; like counts and existing feed content would not be preserved. Also no evidence of conditional/\"only when needed\" logic is shown.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "requirement": "Provide the required PWA icon image files: zizo-app-icon.dim_512x512.png, zizo-app-icon.dim_192x192.png, zizo-app-icon-maskable.dim_512x512.png.",
+      "reason": "Manifest and HTML reference these icon paths, but the diff summary does not show the actual PNG files being added to the repository.",
+      "evidence": [
+        "frontend/public/manifest.webmanifest",
+        "frontend/index.html",
+        "frontend/public/sw.js"
+      ]
+    }
+  ],
+  "hallucinated_features": [],
+  "confidence": 0.74,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.html",
+    "frontend/public/manifest.webmanifest",
+    "frontend/public/sw.js",
+    "frontend/src/App.tsx",
+    "frontend/src/components/feed/FeedItem.tsx",
+    "frontend/src/components/feed/FeedOverlay.tsx",
+    "frontend/src/components/feed/InteractionRail.tsx",
+    "frontend/src/components/feed/UploadButton.tsx",
+    "frontend/src/components/feed/UploadDialog.tsx",
+    "frontend/src/components/feed/VideoFeed.tsx",
+    "frontend/src/components/feed/VideoFeedItem.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "project_state.json"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-a-frontend-upload-entry-point-upload-button-that-is-visible-on-both-mobile-and-desktop-allowing-authenticated-users-to-upload-videos-and-pictures-with-a-caption-after-upload-completes-the-new-post-appears-immediately-in-the-global-feed",
+      "featureTitle": "Add a frontend upload entry point (upload button) that is visible on both mobile and desktop, allowing authenticated users to upload videos and pictures with a caption; after upload completes, the new post appears immediately in the global feed.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/feed/UploadButton.tsx",
+        "frontend/src/components/feed/UploadDialog.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-feed-rendering-to-support-both-video-posts-and-image-posts-in-the-same-vertically-paged-full-screen-feed-preserving-existing-overlays-and-interaction-rail-behaviors-where-applicable",
+      "featureTitle": "Update the feed rendering to support both video posts and image posts in the same vertically paged, full-screen feed, preserving existing overlays and interaction rail behaviors where applicable.",
+      "files": [
+        "frontend/src/components/feed/FeedItem.tsx",
+        "frontend/src/components/feed/FeedOverlay.tsx",
+        "frontend/src/components/feed/InteractionRail.tsx",
+        "frontend/src/components/feed/VideoFeed.tsx",
+        "frontend/src/components/feed/VideoFeedItem.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-mobile-app-like-experience-for-the-web-app-by-enabling-installability-as-a-pwa-and-ensuring-the-ui-feels-app-like-on-mobile-safe-area-spacing-full-screen-layout-stability-and-touch-first-controls",
+      "featureTitle": "Add a mobile-app-like experience for the web app by enabling installability as a PWA and ensuring the UI feels app-like on mobile (safe-area spacing, full-screen layout stability, and touch-first controls).",
+      "files": [
+        "frontend/index.html",
+        "frontend/public/manifest.webmanifest",
+        "frontend/public/sw.js",
+        "frontend/src/App.tsx",
+        "frontend/src/index.css"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
