@@ -3,13 +3,16 @@ import Map "mo:core/Map";
 import List "mo:core/List";
 import Char "mo:core/Char";
 import Text "mo:core/Text";
+import Iter "mo:core/Iter";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
+import Migration "migration";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
+import MixinStorage "blob-storage/Mixin";
 
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -28,8 +31,16 @@ actor {
     likeCount : Nat;
   };
 
+  public type Comment = {
+    id : Nat;
+    author : Principal;
+    text : Text;
+    media : ?MediaType;
+  };
+
   let feedItems = List.empty<FeedItem>();
   let userLikes = Map.empty<Text, Set.Set<Principal>>();
+  let comments = Map.empty<Nat, List.List<Comment>>();
 
   public type UserProfile = {
     name : Text;
@@ -75,6 +86,7 @@ actor {
     };
 
     feedItems.add(newFeedItem);
+    comments.add(newFeedItem.id, List.empty<Comment>());
     newFeedItem;
   };
 
@@ -168,5 +180,37 @@ actor {
       toLower(item.handle).contains(#text(toLower(searchText))) or
       toLower(item.caption).contains(#text(toLower(searchText)))
     }).toArray();
+  };
+
+  public shared ({ caller }) func addComment(feedItemId : Nat, commentText : Text, media : ?MediaType) : async Comment {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can add comments");
+    };
+
+    let newComment : Comment = {
+      id = switch (comments.get(feedItemId)) {
+        case (null) { 0 };
+        case (?existingComments) { existingComments.size() };
+      };
+      author = caller;
+      text = commentText;
+      media;
+    };
+
+    let existingComments = switch (comments.get(feedItemId)) {
+      case (null) { List.empty<Comment>() };
+      case (?existingComments) { existingComments };
+    };
+
+    existingComments.add(newComment);
+    comments.add(feedItemId, existingComments);
+    newComment;
+  };
+
+  public query ({ caller }) func getComments(feedItemId : Nat) : async [Comment] {
+    switch (comments.get(feedItemId)) {
+      case (null) { [] };
+      case (?existingComments) { existingComments.toArray() };
+    };
   };
 };

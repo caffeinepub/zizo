@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix upload and playback issues by making captions optional, ensuring edited videos remain valid with audio, and adding in-feed playback controls, then redeploy.
+**Goal:** Add a backend-persisted comments system with a TikTok-style comments UI, and implement per-post share links that deep-link to and auto-scroll to a specific post in the main feed.
 
 **Planned changes:**
-- Allow uploads (images/videos) to proceed with an empty/whitespace caption and remove any “caption required” validation messaging.
-- Update the backend addMedia API to accept and store empty captions without errors; ensure feed fetching/serialization and UI rendering handle caption="" safely.
-- Fix the video editing/upload pipeline so edited videos remain playable video files (not converted to images) and retain their audio track; address freezing during playback and replay.
-- Add in-feed overlay controls for the active video: Pause/Play toggle and Mute/Unmute toggle (videos start muted by default; images show no such controls).
-- Re-run build and deployment so updated frontend/backend are compiled and released.
+- Backend: Add persisted comment storage per feed item, plus APIs to fetch comments for a post and add a new comment (authenticated), supporting text and optional image/video attachments stored via the existing blob storage approach.
+- Frontend: Replace the “Comments coming soon!” placeholder with a bottom-sheet (TikTok-style) comments screen that loads comments, shows loading/error states, and lets authenticated users post comments with optional media attachments.
+- Frontend: Update feed interaction UI so the comment count reflects the number of comments for each post (at least after viewing/posting).
+- Frontend: Implement per-post shareable URLs that include the post ID; on open, load the main feed and auto-scroll to the referenced post, with a not-found message if missing and URL parameter neutralization after handling.
+- Frontend: Replace the “Share feature coming soon!” placeholder with a share menu that supports “Copy link” (clipboard + success/failure toast) and uses the native share sheet when available.
 
-**User-visible outcome:** Users can upload media without a caption, edited videos upload and play correctly with sound available via unmute, videos don’t freeze mid-play, and videos in the feed have pause/resume and mute/unmute controls.
+**User-visible outcome:** Users can open a TikTok-style comments panel on any post to read and (when logged in) add text comments with optional image/video attachments, and can share a post via a unique link that opens the feed and jumps directly to that post, with copy-link and native sharing support.

@@ -1,124 +1,107 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Optional captions, reliable video upload/editing, and in-feed playback controls",
+  "title": "TikTok-style comments bottom-sheet + per-post share links with deep-link auto-scroll",
   "requirements": [
     {
-      "id": "REQ-33",
-      "summary": "Allow uploads with an empty/whitespace caption while keeping image/video upload flow functional.",
+      "id": "REQ-40",
+      "summary": "Replace comments placeholder with a TikTok-style bottom-sheet comments UI that lists comments and lets authenticated users post text with optional image/video attachment.",
       "acceptanceCriteria": [
-        "The Upload button is enabled when a media file is selected even if the caption field is empty/whitespace.",
-        "Submitting an upload with an empty caption succeeds and creates a feed item.",
-        "User-facing validation/error text no longer says a caption is required."
+        "Tapping the Comment button on any feed item opens a bottom-sheet style comments UI (TikTok-like) instead of showing a \"coming soon\" toast.",
+        "The comments UI fetches and renders backend comments for the selected feed item and shows a loading state and an error state with English user-facing text.",
+        "The comment composer allows entering text (including emojis/mentions as typed text) and optionally attaching an image or video file; submitting creates the comment via the backend and updates the list without requiring a full page reload.",
+        "If the user is not authenticated, the UI prevents posting and shows an English prompt to log in (viewing comments remains possible if backend allows it).",
+        "The comment count shown in the interaction rail updates to reflect the number of comments for that post (at least after opening/closing or after posting; ideally live within the session)."
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/components/feed/UploadDialog.tsx",
-          "operation": "modify",
-          "description": "Remove caption-required validation and UI disabling logic so uploads proceed when a file is selected even if caption is empty/whitespace; update any user-facing error text to no longer require a caption. (Verify the component's usage instructions before implementing.)"
-        },
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Normalize caption before calling the backend capability (e.g., trim and pass empty string when blank) so the frontend consistently supports optional captions without blocking uploads. (Verify the component's usage instructions before implementing.)"
-        }
-      ]
-    },
-    {
-      "id": "REQ-35",
-      "summary": "Fix the frontend media editing pipeline so video edits remain videos, retain audio, and avoid playback-freezing regressions.",
-      "acceptanceCriteria": [
-        "Using the in-app editor on a video and then uploading results in a feed item that plays as video (not an image) in the feed.",
-        "Uploaded videos retain their original audio track (audio is present when unmuted).",
-        "Uploaded videos play through to the end and can be replayed without freezing part-way."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/mediaEdits.ts",
-          "operation": "modify",
-          "description": "Correct applyVideoEdits to never output an image/jpeg file; ensure it returns a valid video File (typically the original input video file when true non-destructive video editing is not supported) to prevent stripping audio or corrupting playback. (Verify the component's usage instructions before implementing.)"
+          "description": "Add React Query hooks for comments: fetching comments for a feed item (using backend getComments) and adding a comment (using backend addComment). Ensure mutations update/invalidate the comments cache and provide error surfaces that the UI can display. Verify the blob-storage component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/editor/MediaEditorDialog.tsx",
-          "operation": "modify",
-          "description": "Adjust the video editing UX so applying edits does not convert videos to images: ensure the Apply action for videos returns the original video File (or only enables edits that can preserve video+audio), and update user-facing messaging in English to set correct expectations. (Verify the component's usage instructions before implementing.)"
-        },
-        {
-          "path": "frontend/src/components/feed/UploadDialog.tsx",
-          "operation": "modify",
-          "description": "Ensure the upload flow uses the edited file returned by the editor without changing MIME type semantics; keep video files as video/* after editing and before upload. (Verify the component's usage instructions before implementing.)"
-        },
-        {
-          "path": "frontend/src/components/feed/FeedItem.tsx",
-          "operation": "modify",
-          "description": "Harden in-feed video playback to reduce freezing risk: manage play/pause lifecycle more carefully for active/inactive transitions, handle ended/replay state, and ensure the rendered element remains a <video> for video media. (Verify the component's usage instructions before implementing.)"
-        }
-      ]
-    },
-    {
-      "id": "REQ-36",
-      "summary": "Add an in-feed pause/resume control for the active video item.",
-      "acceptanceCriteria": [
-        "When a feed item is a video and is active, a visible Pause/Play control is available on the overlay.",
-        "Tapping Pause pauses the active video; tapping Play resumes playback from the current time.",
-        "The control does not appear (or is disabled) for image posts."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "path": "frontend/src/components/comments/CommentsSheet.tsx",
           "operation": "create",
-          "description": "Create an overlay control component that provides Play/Pause UI for the active video item and calls through to a provided video element ref/controller. (Verify the component's usage instructions before implementing.)"
+          "description": "Create a bottom-sheet style comments container component (TikTok-like) that can be opened from a feed item, renders header + list + composer area, and supports loading/error/empty states in English. Use existing shadcn-ui primitives already present in the repo (do not modify ui components). Verify the shadcn-ui component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/comments/CommentList.tsx",
+          "operation": "create",
+          "description": "Create a comment list renderer that maps backend Comment items (text + optional media) into a scrollable list with stable keys, and renders media via ExternalBlob.getDirectURL() for efficient display. Verify the blob-storage component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/comments/CommentComposer.tsx",
+          "operation": "create",
+          "description": "Create a composer UI with a text input, optional image/video file picker, and a submit action that posts via the add-comment hook; when unauthenticated, disable posting and show an English prompt to log in. Convert selected files to MediaType using ExternalBlob.fromBytes and support basic progress wiring if desired. Verify the authorization and blob-storage components' usage instructions before implementing."
         },
         {
           "path": "frontend/src/components/feed/FeedItem.tsx",
           "operation": "modify",
-          "description": "Wire the new VideoOverlayControls into the active video overlay (only when isActive && isVideo), and implement the pause/resume behavior by controlling the underlying video element. (Verify the component's usage instructions before implementing.)"
+          "description": "Wire the new CommentsSheet into each feed item: manage open/close state, open it from the InteractionRail, and keep a per-item commentCount state that updates after fetch/post so the interaction rail count reflects the latest known value."
         },
         {
-          "path": "frontend/src/components/feed/FeedOverlay.tsx",
+          "path": "frontend/src/components/feed/InteractionRail.tsx",
           "operation": "modify",
-          "description": "Ensure overlay layout supports additional active-video controls (Play/Pause) without interfering with existing caption/handle display, and keep controls hidden/disabled for images. (Verify the component's usage instructions before implementing.)"
+          "description": "Replace the \"Comments coming soon!\" toast with a callback that opens the CommentsSheet for the current item, and display a real comment count value passed from FeedItem instead of hard-coded 0."
         }
       ]
     },
     {
-      "id": "REQ-37",
-      "summary": "Add mute/unmute control for active videos and ensure audio plays when unmuted.",
+      "id": "REQ-41",
+      "summary": "Add per-post share links that deep-link into the feed and auto-scroll to the referenced post, then neutralize the deep-link parameter.",
       "acceptanceCriteria": [
-        "Active videos start muted by default, but the user can toggle unmute and hear audio for videos that contain audio.",
-        "The mute state change takes effect immediately on the active video element.",
-        "The mute/unmute control is accessible in the in-feed overlay UI."
+        "Tapping Share on a feed item generates a unique share URL that encodes the feed item ID (e.g., via a query parameter) and works when pasted into a new tab/browser.",
+        "Opening a share URL loads the main feed and, once items are available, programmatically scrolls to the referenced post using the existing `VideoFeed` imperative handle (`scrollToItemId`).",
+        "If the referenced post ID is not found in the loaded feed, the app shows an English message/toast indicating the post could not be found.",
+        "After handling the deep link, the app removes or neutralizes the deep-link parameter to avoid repeated auto-scrolling on subsequent navigation within the same session (using the existing URL/session utilities where appropriate)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "path": "frontend/src/utils/urlParams.ts",
           "operation": "modify",
-          "description": "Extend the overlay controls to include a Mute/Unmute toggle for active videos (default muted), and expose callbacks/state needed to control the video element muted property immediately. (Verify the component's usage instructions before implementing.)"
+          "description": "Extend URL utilities with a safe function to remove/neutralize a non-secret deep-link parameter (e.g., postId) from the current URL without reloading (support regular query string and hash query forms), so auto-scroll does not repeat on subsequent navigation."
+        },
+        {
+          "path": "frontend/src/utils/shareLinks.ts",
+          "operation": "create",
+          "description": "Add a small utility to build the per-post share URL using window.location origin/path and a deep-link parameter encoding the feed item ID; keep it consistent across the app for copy/share actions."
+        },
+        {
+          "path": "frontend/src/components/feed/VideoFeed.tsx",
+          "operation": "modify",
+          "description": "On initial load when feed items become available, detect a deep-link parameter for a post ID, then invoke the existing imperative handle behavior (scrollToItemId) to scroll to the post; if not found, show an English toast; finally clear/neutralize the deep-link parameter to prevent repeated scrolling."
+        }
+      ]
+    },
+    {
+      "id": "REQ-42",
+      "summary": "Replace share placeholder with an in-app share menu supporting copy link and native share sheet when available.",
+      "acceptanceCriteria": [
+        "Tapping Share no longer shows a \"coming soon\" toast and instead opens a small in-app share menu (or action UI) with at minimum: Copy link.",
+        "Copy link writes the share URL to the clipboard and shows an English success/failure toast.",
+        "If `navigator.share` is available, the share UI offers a \"Share\" action that invokes the native share sheet using the per-post share URL.",
+        "If `navigator.share` is unavailable, the UI gracefully omits/disabled that option and still allows copying the link."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/share/ShareMenu.tsx",
+          "operation": "create",
+          "description": "Create an in-app share action UI (e.g., dialog/popover) that offers Copy link and conditionally a Native Share action when navigator.share exists, with English success/failure toasts. Use existing shadcn-ui primitives already present in the repo (do not modify ui components). Verify the shadcn-ui component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/components/feed/FeedItem.tsx",
           "operation": "modify",
-          "description": "Implement per-item muted state (default true) for videos and bind it to the <video> element (muted attribute/property) so unmuting outputs audio immediately; pass state/handlers to VideoOverlayControls. (Verify the component's usage instructions before implementing.)"
-        }
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "summary": "Ensure the frontend build/deployment flow reflects the fixes and can be re-run successfully.",
-      "acceptanceCriteria": [
-        "Frontend and backend compile successfully with no build-blocking errors.",
-        "The deployed app loads and the upload + playback fixes are available in production."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/DEPLOYMENT.md",
-          "operation": "modify",
-          "description": "Update deployment documentation to explicitly call out the required rebuild/redeploy steps after making upload/playback fixes (including cache/service-worker considerations) in English. (Verify the component's usage instructions before implementing.)"
+          "description": "Add state and wiring to open the ShareMenu for the current feed item, passing the computed per-post share URL and any metadata needed for navigator.share."
         },
         {
-          "path": "frontend/scripts/deploy-frontend-prod.sh",
+          "path": "frontend/src/components/feed/InteractionRail.tsx",
           "operation": "modify",
-          "description": "Add/adjust script messaging and/or verification steps as needed to ensure a clean production rebuild and redeploy of the updated frontend assets (dist output). (Verify the component's usage instructions before implementing.)"
+          "description": "Replace the \"Share feature coming soon!\" toast with a callback that opens the ShareMenu for the current item."
+        },
+        {
+          "path": "frontend/src/utils/shareLinks.ts",
+          "operation": "modify",
+          "description": "Ensure the share-link utility supports the exact URL shape used by the ShareMenu and the deep-link auto-scroll logic (single source of truth for parameter name and formatting)."
         }
       ]
     }

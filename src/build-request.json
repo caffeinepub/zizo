@@ -1,130 +1,116 @@
 {
   "kind": "build_request",
-  "title": "Retry build + fix upload caption optional, restore uploaded video audio, prevent freezing, add pause/resume controls",
+  "title": "Implement TikTok-style comments + per-post share links with deep-link auto-scroll",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-33",
-      "text": "Make the upload caption optional (uploader may leave it empty) while keeping the upload flow functional for both images and videos.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Can you make the caption when uploading videos optional",
-          "For the caption side make it a decision to the uploader"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The Upload button is enabled when a media file is selected even if the caption field is empty/whitespace.",
-        "Submitting an upload with an empty caption succeeds and creates a feed item.",
-        "User-facing validation/error text no longer says a caption is required."
-      ]
-    },
-    {
-      "id": "REQ-34",
-      "text": "Update the backend addMedia API behavior to accept empty captions (store empty string) so optional captions do not cause backend errors or traps.",
+      "id": "REQ-39",
+      "text": "Implement a backend-persisted comments system for feed posts: store comments per feed item so that all users can fetch and view them, and authenticated users can add new comments (support text plus optional attached media: image/video).",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "make the caption when uploading videos optional"
+          "For comments I want a full comment screen list of comment + ability to add comments",
+          "Comment should be stored in backend so everyone can see them",
+          "Comment shield support text, emojis ,stickers ,mentions ,Media ,image or videos"
         ]
       },
       "acceptanceCriteria": [
-        "Calling addMedia with caption=\"\" succeeds for authenticated users.",
-        "Feed items returned from fetchFeedItems can contain caption=\"\" without breaking serialization or UI rendering."
+        "Backend exposes an API to fetch comments for a given feed item ID and returns comments in chronological order (oldest to newest or newest to oldest, but consistent and documented in code).",
+        "Backend exposes an API to add a comment for a given feed item ID; it requires an authenticated caller and persists the new comment.",
+        "A comment supports a text field (allowing emojis/mentions as plain text) and an optional media attachment (image or video) stored using the existing blob storage approach (ExternalBlob).",
+        "If a feed item ID does not exist, comment APIs return a safe, user-actionable error (no traps that crash the canister).",
+        "No migration is introduced unless required by compilation/state constraints; existing feed items and like counts remain intact after upgrade."
       ]
     },
     {
-      "id": "REQ-35",
-      "text": "Fix the media editing pipeline so video edits do not convert the uploaded video into a JPEG/image and do not strip audio; edited videos must remain valid playable video files.",
+      "id": "REQ-40",
+      "text": "Replace the current \"Comments coming soon!\" placeholder with a TikTok-style comments screen that opens from the feed (bottom sheet style), displays the comment list for the selected post, and allows authenticated users to add a new comment with optional media attachment (image/video).",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "There is simply no audio track at all",
-          "some videos aren't able to play after uploaded",
-          "For the video that freeze It happened when every video is uploaded"
+          "When I tap on the comment button it says coming soon",
+          "For comments I want a full comment screen list of comment + ability to add comments",
+          "It should be a tiktok style",
+          "Comment shield support text, emojis ,stickers ,mentions ,Media ,image or videos"
         ]
       },
       "acceptanceCriteria": [
-        "Using the in-app editor on a video and then uploading results in a feed item that plays as video (not an image) in the feed.",
-        "Uploaded videos retain their original audio track (audio is present when unmuted).",
-        "Uploaded videos play through to the end and can be replayed without freezing part-way."
+        "Tapping the Comment button on any feed item opens a bottom-sheet style comments UI (TikTok-like) instead of showing a \"coming soon\" toast.",
+        "The comments UI fetches and renders backend comments for the selected feed item and shows a loading state and an error state with English user-facing text.",
+        "The comment composer allows entering text (including emojis/mentions as typed text) and optionally attaching an image or video file; submitting creates the comment via the backend and updates the list without requiring a full page reload.",
+        "If the user is not authenticated, the UI prevents posting and shows an English prompt to log in (viewing comments remains possible if backend allows it).",
+        "The comment count shown in the interaction rail updates to reflect the number of comments for that post (at least after opening/closing or after posting; ideally live within the session)."
       ]
     },
     {
-      "id": "REQ-36",
-      "text": "Add an in-feed pause/resume control on the video overlay so users can manually pause and resume the currently active video.",
+      "id": "REQ-41",
+      "text": "Implement per-post shareable links that include the post ID and, when opened, load the main feed and automatically scroll to the referenced post.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "add a pause and resume button"
+          "For sharing every post should have its own unique shareable link",
+          "When someone open a post unique shareable link it showed open the main feed and auto scroll to that post"
         ]
       },
       "acceptanceCriteria": [
-        "When a feed item is a video and is active, a visible Pause/Play control is available on the overlay.",
-        "Tapping Pause pauses the active video; tapping Play resumes playback from the current time.",
-        "The control does not appear (or is disabled) for image posts."
+        "Tapping Share on a feed item generates a unique share URL that encodes the feed item ID (e.g., via a query parameter) and works when pasted into a new tab/browser.",
+        "Opening a share URL loads the main feed and, once items are available, programmatically scrolls to the referenced post using the existing `VideoFeed` imperative handle (`scrollToItemId`).",
+        "If the referenced post ID is not found in the loaded feed, the app shows an English message/toast indicating the post could not be found.",
+        "After handling the deep link, the app removes or neutralizes the deep-link parameter to avoid repeated auto-scrolling on subsequent navigation within the same session (using the existing URL/session utilities where appropriate)."
       ]
     },
     {
-      "id": "REQ-37",
-      "text": "Ensure uploaded videos can play with sound (not permanently silent): provide a user-facing unmute/mute control for the active video and ensure the video element can output audio when unmuted.",
+      "id": "REQ-42",
+      "text": "Replace the current \"Share feature coming soon!\" placeholder with a functional share flow that supports copying the per-post link and, where available, invoking the native share sheet.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "There is simply no audio track at all"
+          "When I tap on the share button it also says coming soon",
+          "When I tap on share I expect copy link, native share sheet, in-app share."
         ]
       },
       "acceptanceCriteria": [
-        "Active videos start muted by default, but the user can toggle unmute and hear audio for videos that contain audio.",
-        "The mute state change takes effect immediately on the active video element.",
-        "The mute/unmute control is accessible in the in-feed overlay UI."
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "text": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Build again now"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Frontend and backend compile successfully with no build-blocking errors.",
-        "The deployed app loads and the upload + playback fixes are available in production."
+        "Tapping Share no longer shows a \"coming soon\" toast and instead opens a small in-app share menu (or action UI) with at minimum: Copy link.",
+        "Copy link writes the share URL to the clipboard and shows an English success/failure toast.",
+        "If `navigator.share` is available, the share UI offers a \"Share\" action that invokes the native share sheet using the per-post share URL.",
+        "If `navigator.share` is unavailable, the UI gracefully omits/disabled that option and still allows copying the link."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add a migration (backend/migration.mo) if a stable state upgrade is required.",
-    "Do not edit files under frontend/src/components/ui or other paths listed in frontend.immutablePaths.",
-    "Use English for any user-facing text."
+    "Backend must remain a single Motoko actor; implement new APIs and state in `backend/main.mo` and add `backend/migration.mo` only if a state upgrade requires it.",
+    "Do not edit files under `frontend/src/components/ui` or other paths listed as immutable in SYSTEM_CONTEXT.",
+    "Use English for all user-facing UI text (toasts, labels, errors)."
   ],
   "nonGoals": [
-    "Implementing server-side transcoding or format conversion for uploaded videos.",
-    "Adding third-party media processing services or external storage/database.",
-    "Changing authentication providers (Internet Identity remains the only auth)."
+    "Implementing a full social graph (followers/following) or notifications for comments.",
+    "Implementing true rich-text parsing for mentions/hashtags beyond storing/displaying them as entered text.",
+    "Adding external integrations for sharing (social platform APIs) beyond native share sheet + copy link."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

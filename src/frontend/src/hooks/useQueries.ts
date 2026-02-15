@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentity';
-import type { FeedItem, UserProfile, MediaType } from '../backend';
+import type { FeedItem, UserProfile, MediaType, Comment } from '../backend';
 import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
 
@@ -213,6 +213,84 @@ export function useSearchFeed() {
           throw new Error('Please log in to search');
         }
         throw new Error('Search failed. Please try again.');
+      }
+    },
+  });
+}
+
+export function useGetComments(feedItemId: bigint) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Comment[]>({
+    queryKey: ['comments', feedItemId.toString()],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getComments(feedItemId);
+      } catch (error: any) {
+        console.error('Get comments error:', error);
+        throw new Error('Failed to load comments. Please try again.');
+      }
+    },
+    enabled: !!actor && !actorFetching,
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useAddComment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      feedItemId, 
+      text, 
+      media 
+    }: { 
+      feedItemId: bigint; 
+      text: string; 
+      media?: { file: File; onProgress?: (percentage: number) => void };
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+
+      let mediaType: MediaType | null = null;
+
+      if (media) {
+        const arrayBuffer = await media.file.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+
+        let blob = ExternalBlob.fromBytes(bytes);
+        if (media.onProgress) {
+          blob = blob.withUploadProgress(media.onProgress);
+        }
+
+        const isImage = media.file.type.startsWith('image/');
+        mediaType = isImage
+          ? { __kind__: 'image', image: blob }
+          : { __kind__: 'video', video: blob };
+      }
+
+      return actor.addComment(feedItemId, text, mediaType);
+    },
+    onSuccess: (newComment, variables) => {
+      queryClient.setQueryData<Comment[]>(
+        ['comments', variables.feedItemId.toString()],
+        (old) => {
+          if (!old) return [newComment];
+          return [...old, newComment];
+        }
+      );
+      queryClient.invalidateQueries({ 
+        queryKey: ['comments', variables.feedItemId.toString()] 
+      });
+      toast.success('Comment posted!');
+    },
+    onError: (error: any) => {
+      console.error('Add comment error:', error);
+      if (error.message?.includes('Unauthorized')) {
+        toast.error('Please log in to comment');
+      } else {
+        toast.error('Failed to post comment. Please try again.');
       }
     },
   });

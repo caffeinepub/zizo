@@ -24,6 +24,12 @@ export const MediaType = IDL.Variant({
   'video' : ExternalBlob,
   'image' : ExternalBlob,
 });
+export const Comment = IDL.Record({
+  'id' : IDL.Nat,
+  'media' : IDL.Opt(MediaType),
+  'text' : IDL.Text,
+  'author' : IDL.Principal,
+});
 export const FeedItem = IDL.Record({
   'id' : IDL.Nat,
   'media' : MediaType,
@@ -66,11 +72,17 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addComment' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Opt(MediaType)],
+      [Comment],
+      [],
+    ),
   'addMedia' : IDL.Func([MediaType, IDL.Opt(IDL.Text)], [FeedItem], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'fetchFeedItems' : IDL.Func([], [IDL.Vec(FeedItem)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -100,6 +112,12 @@ export const idlFactory = ({ IDL }) => {
   const MediaType = IDL.Variant({
     'video' : ExternalBlob,
     'image' : ExternalBlob,
+  });
+  const Comment = IDL.Record({
+    'id' : IDL.Nat,
+    'media' : IDL.Opt(MediaType),
+    'text' : IDL.Text,
+    'author' : IDL.Principal,
   });
   const FeedItem = IDL.Record({
     'id' : IDL.Nat,
@@ -143,11 +161,17 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addComment' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Opt(MediaType)],
+        [Comment],
+        [],
+      ),
     'addMedia' : IDL.Func([MediaType, IDL.Opt(IDL.Text)], [FeedItem], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'fetchFeedItems' : IDL.Func([], [IDL.Vec(FeedItem)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],

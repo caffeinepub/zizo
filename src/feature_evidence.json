@@ -2,10 +2,14 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-make-the-upload-caption-optional-uploader-may-leave-it-empty-while-keeping-the-upload-flow-functional-for-both-images-and-videos",
-      "featureTitle": "Make the upload caption optional (uploader may leave it empty) while keeping the upload flow functional for both images and videos.",
+      "featureId": "feature-replace-the-current-comments-coming-soon-placeholder-with-a-tiktok-style-comments-screen-that-opens-from-the-feed-bottom-sheet-style-displays-the-comment-list-for-the-selected-post-and-allows-authenticated-users-to-add-a-new-comment-with-optional-media-attachment-image-video",
+      "featureTitle": "Replace the current \"Comments coming soon!\" placeholder with a TikTok-style comments screen that opens from the feed (bottom sheet style), displays the comment list for the selected post, and allows authenticated users to add a new comment with optional media attachment (image/video).",
       "files": [
-        "frontend/src/components/feed/UploadDialog.tsx",
+        "frontend/src/components/comments/CommentComposer.tsx",
+        "frontend/src/components/comments/CommentList.tsx",
+        "frontend/src/components/comments/CommentsSheet.tsx",
+        "frontend/src/components/feed/FeedItem.tsx",
+        "frontend/src/components/feed/InteractionRail.tsx",
         "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
@@ -19,18 +23,17 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-33"
+        "REQ-40"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-the-media-editing-pipeline-so-video-edits-do-not-convert-the-uploaded-video-into-a-jpeg-image-and-do-not-strip-audio-edited-videos-must-remain-valid-playable-video-files",
-      "featureTitle": "Fix the media editing pipeline so video edits do not convert the uploaded video into a JPEG/image and do not strip audio; edited videos must remain valid playable video files.",
+      "featureId": "feature-implement-per-post-shareable-links-that-include-the-post-id-and-when-opened-load-the-main-feed-and-automatically-scroll-to-the-referenced-post",
+      "featureTitle": "Implement per-post shareable links that include the post ID and, when opened, load the main feed and automatically scroll to the referenced post.",
       "files": [
-        "frontend/src/components/editor/MediaEditorDialog.tsx",
-        "frontend/src/components/feed/FeedItem.tsx",
-        "frontend/src/components/feed/UploadDialog.tsx",
-        "frontend/src/utils/mediaEdits.ts"
+        "frontend/src/components/feed/VideoFeed.tsx",
+        "frontend/src/utils/shareLinks.ts",
+        "frontend/src/utils/urlParams.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,16 +46,18 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-35"
+        "REQ-41"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-an-in-feed-pause-resume-control-on-the-video-overlay-so-users-can-manually-pause-and-resume-the-currently-active-video",
-      "featureTitle": "Add an in-feed pause/resume control on the video overlay so users can manually pause and resume the currently active video.",
+      "featureId": "feature-replace-the-current-share-feature-coming-soon-placeholder-with-a-functional-share-flow-that-supports-copying-the-per-post-link-and-where-available-invoking-the-native-share-sheet",
+      "featureTitle": "Replace the current \"Share feature coming soon!\" placeholder with a functional share flow that supports copying the per-post link and, where available, invoking the native share sheet.",
       "files": [
         "frontend/src/components/feed/FeedItem.tsx",
-        "frontend/src/components/feed/VideoOverlayControls.tsx"
+        "frontend/src/components/feed/InteractionRail.tsx",
+        "frontend/src/components/share/ShareMenu.tsx",
+        "frontend/src/utils/shareLinks.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -65,29 +70,7 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-36"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-uploaded-videos-can-play-with-sound-not-permanently-silent-provide-a-user-facing-unmute-mute-control-for-the-active-video-and-ensure-the-video-element-can-output-audio-when-unmuted",
-      "featureTitle": "Ensure uploaded videos can play with sound (not permanently silent): provide a user-facing unmute/mute control for the active video and ensure the video element can output audio when unmuted.",
-      "files": [
-        "frontend/src/components/feed/FeedItem.tsx",
-        "frontend/src/components/feed/VideoOverlayControls.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0",
-        "camera@1.0.0"
-      ],
-      "testIds": [
-        "REQ-37"
+        "REQ-42"
       ],
       "confidence": "high"
     }

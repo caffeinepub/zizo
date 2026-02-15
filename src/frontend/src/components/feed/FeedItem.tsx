@@ -4,9 +4,12 @@ import { FeedOverlay } from './FeedOverlay';
 import { InteractionRail } from './InteractionRail';
 import { SpeedControl } from './SpeedControl';
 import { VideoOverlayControls } from './VideoOverlayControls';
+import { CommentsSheet } from '../comments/CommentsSheet';
+import { ShareMenu } from '../share/ShareMenu';
 import { useDoubleTap } from '../../hooks/useDoubleTap';
 import { useToggleLike, useUserLikes } from '../../hooks/useQueries';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { generateShareUrl } from '../../utils/shareLinks';
 import { Heart } from 'lucide-react';
 
 interface FeedItemProps {
@@ -21,6 +24,9 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
   const toggleLikeMutation = useToggleLike();
   const { identity } = useInternetIdentity();
   const { data: userLikes } = useUserLikes();
@@ -32,6 +38,8 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
   const mediaUrl = isVideo 
     ? (item.media.__kind__ === 'video' ? item.media.video.getDirectURL() : '')
     : (item.media.__kind__ === 'image' ? item.media.image.getDirectURL() : '');
+
+  const shareUrl = generateShareUrl(itemId);
 
   const handleLike = () => {
     if (!identity) {
@@ -114,79 +122,99 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
   }, [playbackRate, isVideo]);
 
   return (
-    <div
-      ref={ref}
-      data-feed-item
-      data-index={index}
-      className="relative h-screen w-screen snap-start snap-always bg-black flex items-center justify-center"
-    >
-      {isVideo ? (
-        <video
-          ref={videoRef}
-          src={mediaUrl}
-          className="absolute inset-0 h-full w-full object-cover"
-          loop
-          muted={isMuted}
-          playsInline
-          preload={isActive ? 'auto' : 'metadata'}
-        />
-      ) : (
-        <img
-          src={mediaUrl}
-          alt={item.caption}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
-      
+    <>
       <div
-        ref={doubleTapRef}
-        className="absolute inset-0 z-10"
-        style={{ touchAction: 'pan-y' }}
-      />
-
-      {showHeartAnimation && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-          <Heart 
-            className="h-32 w-32 text-white fill-white animate-ping opacity-80"
-            style={{ animationDuration: '0.6s', animationIterationCount: '1' }}
-          />
-        </div>
-      )}
-
-      {isActive && isVideo && (
-        <VideoOverlayControls
-          isPlaying={isPlaying}
-          isMuted={isMuted}
-          onPlayPause={handlePlayPause}
-          onMuteToggle={handleMuteToggle}
-        />
-      )}
-
-      <FeedOverlay
-        handle={item.handle}
-        caption={item.caption}
-        isActive={isActive}
-        isVideo={isVideo}
+        ref={ref}
+        data-feed-item
+        data-index={index}
+        className="relative h-screen w-screen snap-start snap-always bg-black flex items-center justify-center"
       >
-        {isActive && isVideo && (
-          <SpeedControl
-            currentSpeed={playbackRate}
-            onSpeedChange={setPlaybackRate}
+        {isVideo ? (
+          <video
+            ref={videoRef}
+            src={mediaUrl}
+            className="absolute inset-0 h-full w-full object-cover"
+            loop
+            muted={isMuted}
+            playsInline
+            preload={isActive ? 'auto' : 'metadata'}
+          />
+        ) : (
+          <img
+            src={mediaUrl}
+            alt={item.caption}
+            className="absolute inset-0 h-full w-full object-cover"
           />
         )}
-      </FeedOverlay>
+        
+        <div
+          ref={doubleTapRef}
+          className="absolute inset-0 z-10"
+          style={{ touchAction: 'pan-y' }}
+        />
 
-      <InteractionRail
-        likeCount={Number(item.likeCount)}
-        isLiked={isLiked}
-        onLike={handleLike}
-        isAuthenticated={!!identity}
-        isLoading={toggleLikeMutation.isPending}
-        mediaUrl={mediaUrl}
-        itemId={itemId}
-        mediaType={isVideo ? 'video' : 'image'}
+        {showHeartAnimation && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+            <Heart 
+              className="h-32 w-32 text-white fill-white animate-ping opacity-80"
+              style={{ animationDuration: '0.6s', animationIterationCount: '1' }}
+            />
+          </div>
+        )}
+
+        {isActive && isVideo && (
+          <VideoOverlayControls
+            isPlaying={isPlaying}
+            isMuted={isMuted}
+            onPlayPause={handlePlayPause}
+            onMuteToggle={handleMuteToggle}
+          />
+        )}
+
+        <FeedOverlay
+          handle={item.handle}
+          caption={item.caption}
+          isActive={isActive}
+          isVideo={isVideo}
+        >
+          {isActive && isVideo && (
+            <SpeedControl
+              currentSpeed={playbackRate}
+              onSpeedChange={setPlaybackRate}
+            />
+          )}
+        </FeedOverlay>
+
+        <InteractionRail
+          likeCount={Number(item.likeCount)}
+          commentCount={commentCount}
+          isLiked={isLiked}
+          onLike={handleLike}
+          onComment={() => setCommentsOpen(true)}
+          onShare={() => setShareMenuOpen(true)}
+          isAuthenticated={!!identity}
+          isLoading={toggleLikeMutation.isPending}
+          mediaUrl={mediaUrl}
+          itemId={itemId}
+          mediaType={isVideo ? 'video' : 'image'}
+        />
+      </div>
+
+      <CommentsSheet
+        open={commentsOpen}
+        onOpenChange={setCommentsOpen}
+        feedItemId={item.id}
+        onCommentCountChange={setCommentCount}
       />
-    </div>
+
+      <ShareMenu
+        open={shareMenuOpen}
+        onOpenChange={setShareMenuOpen}
+        shareUrl={shareUrl}
+        title={`Check out this post by ${item.handle}`}
+        text={item.caption || 'Check out this post on ZIZO!'}
+      />
+    </>
   );
 });
 

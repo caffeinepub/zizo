@@ -14,6 +14,12 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface Comment {
+    id: bigint;
+    media?: MediaType;
+    text: string;
+    author: Principal;
+}
 export interface FeedItem {
     id: bigint;
     media: MediaType;
@@ -37,11 +43,13 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    addComment(feedItemId: bigint, commentText: string, media: MediaType | null): Promise<Comment>;
     addMedia(_media: MediaType, caption: string | null): Promise<FeedItem>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     fetchFeedItems(): Promise<Array<FeedItem>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getComments(feedItemId: bigint): Promise<Array<Comment>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;

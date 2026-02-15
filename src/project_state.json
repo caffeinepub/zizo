@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 21,
-  "summary": "Expand the TikTok-style vertical feed web app (PWA-like) with reliable upload visibility/feedback and feed loading, plus new capabilities: in-app install/download entry point (PWA install button in settings/top bar), account settings for editing profile + credentials (PIN/password) + username/handle, in-feed search across captions/handles for both videos and images, in-app capture/editing tools, stronger in-app security verification (security questions + device confirmation + PIN on suspicious activity), the ability to download uploaded media to the user’s device, and optional Android APK/Play Store packaging via PWA wrapping.",
+  "projectStateVersion": 23,
+  "summary": "Expand ZIZO to include a full TikTok-style comments system (backend-persisted, visible to all users, supporting rich content) and a full share feature with per-post unique shareable links that deep-link into the app by opening the main feed and auto-scrolling to the linked post.",
   "architectural_notes": [
     "Target platform is web (React) rather than Expo/React Native.",
     "Core experience: vertical, full-screen, swipe/scroll paging video feed (TikTok-style).",
@@ -20,11 +20,11 @@
     "Build/implementation attempt failed (\"AI couldn't implement that\"), blocking generation of a public app link/APK until a successful build completes.",
     "Deployed public app URL (icp0) fails to load (blank / \"Canister ID Not Resolved\"), causing APK wrappers to show only the link/ads instead of the app/login.",
     "Frontend production HTML is referencing /src/main.tsx (source entry) instead of the built Vite bundle, preventing the app from loading on the icp0 URL.",
-    "Testing https://vg527-maaaa-aaaak-afpsq-cai.icp0.io/ in an incognito window still shows “Canister ID not resolved” (even after Draft Version 7 deploy).",
     "Accessing the deployed icp0 URL returns: \"The gateway couldn't determine the destination canister for this request. Ensure the request includes a valid canister ID or uses a recognized domain\" (frontend canister routing/asset serving still failing).",
     "Caption is currently required on upload; it should be optional.",
     "Uploaded videos have no audio track after upload even though originals contain audio.",
-    "All uploaded videos freeze part-way through playback and won’t replay/continue."
+    "All uploaded videos freeze part-way through playback and won’t replay/continue.",
+    "Comment and Share buttons currently show a \"Coming soon\" placeholder for all posts; real comments + share flows are not implemented."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -291,6 +291,30 @@
         "REQ-37"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-comments-coming-soon-placeholder-with-a-tiktok-style-comments-screen-that-opens-from-the-feed-bottom-sheet-style-displays-the-comment-list-for-the-selected-post-and-allows-authenticated-users-to-add-a-new-comment-with-optional-media-attachment-image-video",
+      "title": "Replace the current \"Comments coming soon!\" placeholder with a TikTok-style comments screen that opens from the feed (bottom sheet style), displays the comment list for the selected post, and allows authenticated users to add a new comment with optional media attachment (image/video).",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-per-post-shareable-links-that-include-the-post-id-and-when-opened-load-the-main-feed-and-automatically-scroll-to-the-referenced-post",
+      "title": "Implement per-post shareable links that include the post ID and, when opened, load the main feed and automatically scroll to the referenced post.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-share-feature-coming-soon-placeholder-with-a-functional-share-flow-that-supports-copying-the-per-post-link-and-where-available-invoking-the-native-share-sheet",
+      "title": "Replace the current \"Share feature coming soon!\" placeholder with a functional share flow that supports copying the per-post link and, where available, invoking the native share sheet.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -421,6 +445,26 @@
       "summary": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
       "reqIds": [
         "REQ-38"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Implement a full TikTok-style comments feature: open a comment screen, list comments, allow adding comments; store comments in the backend so all users can see them; support text, emojis, stickers, mentions, and media (images/videos).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Implement Share for posts: each post has a unique shareable link; opening the link should open the main feed and auto-scroll/deep-link to the specific post; support copy link and (where available) native share sheet/in-app share options.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Implement a backend-persisted comments system for feed posts: store comments per feed item so that all users can fetch and view them, and authenticated users can add new comments (support text plus optional attached media: image/video).",
+      "reqIds": [
+        "REQ-39"
       ],
       "status": "pending"
     }

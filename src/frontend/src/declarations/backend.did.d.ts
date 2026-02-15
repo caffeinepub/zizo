@@ -10,6 +10,12 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Comment {
+  'id' : bigint,
+  'media' : [] | [MediaType],
+  'text' : string,
+  'author' : Principal,
+}
 export type ExternalBlob = Uint8Array;
 export interface FeedItem {
   'id' : bigint,
@@ -52,11 +58,13 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addComment' : ActorMethod<[bigint, string, [] | [MediaType]], Comment>,
   'addMedia' : ActorMethod<[MediaType, [] | [string]], FeedItem>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'fetchFeedItems' : ActorMethod<[], Array<FeedItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getComments' : ActorMethod<[bigint], Array<Comment>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,

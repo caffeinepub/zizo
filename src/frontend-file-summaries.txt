@@ -1,10 +1,10 @@
 {
   "frontend/src/App.tsx": "Main application component with authentication, profile setup, security verification, feed rendering, and enhanced service worker registration with automatic update detection, periodic update checks, and user notification for available updates.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for feed items with retry logic, upload with optional caption normalization and optimistic cache updates with progress tracking, likes with optimistic updates, user profiles, and server-side search functionality.",
-  "frontend/src/components/feed/VideoFeed.tsx": "Feed container with scroll-to-item support via ref, intersection observer for active item detection, retry button on error, and proper loading/empty/error states.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for feed items, uploads, likes, user profiles, search, comments (fetching and adding with media support), with optimistic updates and proper error handling.",
+  "frontend/src/components/feed/VideoFeed.tsx": "Feed container with scroll-to-item support, intersection observer for active item detection, deep-link auto-scroll on load with postId parameter handling, and proper loading/error states.",
   "frontend/src/components/feed/VideoFeedItem.tsx": "Minimal placeholder file to prevent build errors; actual feed item component is FeedItem.tsx.",
   "frontend/src/components/feed/FeedOverlay.tsx": "Overlay component that displays creator handle, caption text, and conditionally renders speed control only for active video items with gradient background and safe-area support.",
-  "frontend/src/components/feed/InteractionRail.tsx": "Interaction rail with like, comment, share, and download buttons; download uses direct media URL and triggers browser download with proper filename.",
+  "frontend/src/components/feed/InteractionRail.tsx": "Interaction rail with like, comment (opens sheet), share (opens menu), and download buttons, displaying real comment counts.",
   "frontend/src/components/feed/SpeedControl.tsx": "Dropdown menu component for selecting video playback speed (0.5×, 1×, 1.5×, 2×) with visual feedback for current selection, only shown for video items.",
   "frontend/src/components/auth/LoginButton.tsx": "Authentication button component that handles login/logout flow with Internet Identity and clears query cache on logout with proper error handling.",
   "frontend/src/components/auth/ProfileSetup.tsx": "Profile setup modal that prompts new users to enter their name before accessing the app with form validation.",
@@ -13,7 +13,7 @@
   "frontend/tailwind.config.js": "Tailwind configuration with extended color palette using magenta/pink primary accent, custom font stack, and animation utilities for the TikTok-style interface.",
   "frontend/src/components/feed/UploadButton.tsx": "Upload trigger button that checks authentication and optionally supports verification gating via callback prop.",
   "frontend/src/components/feed/UploadDialog.tsx": "Upload dialog with tabbed interface for file selection or video recording, media editor integration, optional caption input (no longer required), progress display, error handling, and upload retry support.",
-  "frontend/src/components/feed/FeedItem.tsx": "Individual feed item component (forwardRef) with video/image rendering, playback controls including play/pause and mute/unmute, like interactions, double-tap animation, proper video lifecycle management to prevent freezing, and media URL passed to interaction rail for download.",
+  "frontend/src/components/feed/FeedItem.tsx": "Individual feed item component with video/image rendering, playback controls, like interactions, double-tap animation, comments sheet, share menu, and comment count tracking.",
   "frontend/index.html": "HTML entry point with PWA metadata, cache-control headers to prevent stale shells, noscript fallback message, and proper icon/manifest references for installability.",
   "frontend/public/manifest.webmanifest": "PWA web app manifest with app metadata, display mode, theme colors, scope, and icon references for installability on mobile devices.",
   "frontend/public/sw.js": "Service worker with timestamp-based cache versioning, network-first strategy for HTML, cache-first for static assets, explicit bypass of all canister/API traffic on ic0/icp0 domains, automatic old cache cleanup, and update message handling.",
@@ -34,5 +34,11 @@
   "frontend/deploy/dfx-frontend-canister-assets.template.json": "Template and documentation for correct dfx.json frontend canister configuration with detailed instructions, verification steps, deployment workflow, common mistakes reference, and example configuration snippet.",
   "frontend/scripts/verify-frontend-canister-assets-config.ts": "Verification script that reads dfx.json and validates that the frontend canister is configured as type \"assets\" with source pointing to \"frontend/dist\" and backend dependency, failing with clear error messages if misconfigured.",
   "frontend/scripts/deploy-frontend-prod.sh": "Automated production deployment script that runs build, verifies dist shell, verifies canister configuration, and deploys to Internet Computer, failing fast at any step with clear English output.",
-  "frontend/src/components/feed/VideoOverlayControls.tsx": "Overlay control component providing play/pause and mute/unmute buttons for active video items with semi-transparent backdrop styling."
+  "frontend/src/components/feed/VideoOverlayControls.tsx": "Overlay control component providing play/pause and mute/unmute buttons for active video items with semi-transparent backdrop styling.",
+  "frontend/src/utils/urlParams.ts": "Utility functions to get and remove URL query parameters (supporting both regular and hash-based query strings) without page reload, including getSecretParameter for secure admin token handling that auto-removes the parameter after retrieval.",
+  "frontend/src/utils/shareLinks.ts": "Utilities for generating per-post share URLs, copying to clipboard via Clipboard API, and invoking native share sheet when available.",
+  "frontend/src/components/comments/CommentsSheet.tsx": "TikTok-style bottom sheet component for displaying comments with header, scrollable list, composer, and loading/error states.",
+  "frontend/src/components/comments/CommentList.tsx": "Comment list renderer displaying author avatars, text, and optional media attachments (images/videos) using ExternalBlob direct URLs.",
+  "frontend/src/components/comments/CommentComposer.tsx": "Comment composer with text input, optional image/video file picker, upload progress tracking, and authentication-gated posting.",
+  "frontend/src/components/share/ShareMenu.tsx": "Share menu dialog offering copy-link and native share sheet options with success/error feedback via toasts."
 }

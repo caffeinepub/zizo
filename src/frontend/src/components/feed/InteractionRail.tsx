@@ -5,8 +5,11 @@ import { downloadMedia } from '../../utils/downloadMedia';
 
 interface InteractionRailProps {
   likeCount: number;
+  commentCount: number;
   isLiked: boolean;
   onLike: () => void;
+  onComment: () => void;
+  onShare: () => void;
   isAuthenticated: boolean;
   isLoading?: boolean;
   mediaUrl: string;
@@ -15,9 +18,12 @@ interface InteractionRailProps {
 }
 
 export function InteractionRail({ 
-  likeCount, 
+  likeCount,
+  commentCount,
   isLiked, 
-  onLike, 
+  onLike,
+  onComment,
+  onShare,
   isAuthenticated, 
   isLoading,
   mediaUrl,
@@ -33,11 +39,11 @@ export function InteractionRail({
   };
 
   const handleCommentClick = () => {
-    toast.info('Comments coming soon!');
+    onComment();
   };
 
   const handleShareClick = () => {
-    toast.info('Share feature coming soon!');
+    onShare();
   };
 
   const handleDownload = async () => {
@@ -85,7 +91,9 @@ export function InteractionRail({
         >
           <MessageCircle className="h-7 w-7" />
         </Button>
-        <span className="text-white text-xs font-semibold drop-shadow-lg">0</span>
+        <span className="text-white text-xs font-semibold drop-shadow-lg">
+          {commentCount.toLocaleString()}
+        </span>
       </div>
 
       <div className="flex flex-col items-center gap-1">

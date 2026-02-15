@@ -1,107 +1,98 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T19:58:02.323Z",
+  "generatedAt": "2026-02-15T20:34:56.272Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 4,
+    "total": 4,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-33",
-        "summary": "Make the upload caption optional (uploader may leave it empty) while keeping the upload flow functional for both images and videos.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/feed/UploadDialog.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/feed/UploadDialog.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-34",
-        "summary": "Update the backend addMedia API behavior to accept empty captions (store empty string) so optional captions do not cause backend errors or traps.",
+        "id": "REQ-39",
+        "summary": "Implement a backend-persisted comments system for feed posts: store comments per feed item so that all users can fetch and view them, and authenticated users can add new comments (support text plus optional attached media: image/video).",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-35",
-        "summary": "Fix the media editing pipeline so video edits do not convert the uploaded video into a JPEG/image and do not strip audio; edited videos must remain valid playable video files.",
+        "id": "REQ-40",
+        "summary": "Replace the current \"Comments coming soon!\" placeholder with a TikTok-style comments screen that opens from the feed (bottom sheet style), displays the comment list for the selected post, and allows authenticated users to add a new comment with optional media attachment (image/video).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/mediaEdits.ts",
-          "frontend/src/components/editor/MediaEditorDialog.tsx",
-          "frontend/src/components/feed/UploadDialog.tsx",
-          "frontend/src/components/feed/FeedItem.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/utils/mediaEdits.ts",
-          "frontend/src/components/editor/MediaEditorDialog.tsx",
-          "frontend/src/components/feed/UploadDialog.tsx",
-          "frontend/src/components/feed/FeedItem.tsx"
-        ]
-      },
-      {
-        "id": "REQ-36",
-        "summary": "Add an in-feed pause/resume control on the video overlay so users can manually pause and resume the currently active video.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/comments/CommentsSheet.tsx",
+          "frontend/src/components/comments/CommentList.tsx",
+          "frontend/src/components/comments/CommentComposer.tsx",
           "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/FeedOverlay.tsx"
+          "frontend/src/components/feed/InteractionRail.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/feed/VideoOverlayControls.tsx",
-          "frontend/src/components/feed/FeedItem.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/comments/CommentsSheet.tsx",
+          "frontend/src/components/comments/CommentList.tsx",
+          "frontend/src/components/comments/CommentComposer.tsx",
+          "frontend/src/components/feed/FeedItem.tsx",
+          "frontend/src/components/feed/InteractionRail.tsx"
         ]
       },
       {
-        "id": "REQ-37",
-        "summary": "Ensure uploaded videos can play with sound (not permanently silent): provide a user-facing unmute/mute control for the active video and ensure the video element can output audio when unmuted.",
+        "id": "REQ-41",
+        "summary": "Implement per-post shareable links that include the post ID and, when opened, load the main feed and automatically scroll to the referenced post.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/feed/VideoOverlayControls.tsx",
-          "frontend/src/components/feed/FeedItem.tsx"
+          "frontend/src/utils/urlParams.ts",
+          "frontend/src/utils/shareLinks.ts",
+          "frontend/src/components/feed/VideoFeed.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/feed/VideoOverlayControls.tsx",
-          "frontend/src/components/feed/FeedItem.tsx"
+          "frontend/src/utils/urlParams.ts",
+          "frontend/src/utils/shareLinks.ts",
+          "frontend/src/components/feed/VideoFeed.tsx"
         ]
       },
       {
-        "id": "REQ-38",
-        "summary": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
-        "status": "missing",
+        "id": "REQ-42",
+        "summary": "Replace the current \"Share feature coming soon!\" placeholder with a functional share flow that supports copying the per-post link and, where available, invoking the native share sheet.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/DEPLOYMENT.md",
-          "frontend/scripts/deploy-frontend-prod.sh"
+          "frontend/src/components/share/ShareMenu.tsx",
+          "frontend/src/components/feed/FeedItem.tsx",
+          "frontend/src/components/feed/InteractionRail.tsx",
+          "frontend/src/utils/shareLinks.ts"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/components/share/ShareMenu.tsx",
+          "frontend/src/components/feed/FeedItem.tsx",
+          "frontend/src/components/feed/InteractionRail.tsx",
+          "frontend/src/utils/shareLinks.ts"
+        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/editor/MediaEditorDialog.tsx",
+    "frontend/src/components/comments/CommentComposer.tsx",
+    "frontend/src/components/comments/CommentList.tsx",
+    "frontend/src/components/comments/CommentsSheet.tsx",
     "frontend/src/components/feed/FeedItem.tsx",
-    "frontend/src/components/feed/UploadDialog.tsx",
-    "frontend/src/components/feed/VideoOverlayControls.tsx",
+    "frontend/src/components/feed/InteractionRail.tsx",
+    "frontend/src/components/feed/VideoFeed.tsx",
+    "frontend/src/components/share/ShareMenu.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/utils/mediaEdits.ts",
+    "frontend/src/utils/shareLinks.ts",
+    "frontend/src/utils/urlParams.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
