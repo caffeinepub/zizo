@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 23,
+  "projectStateVersion": 27,
   "summary": "Expand ZIZO to include a full TikTok-style comments system (backend-persisted, visible to all users, supporting rich content) and a full share feature with per-post unique shareable links that deep-link into the app by opening the main feed and auto-scrolling to the linked post.",
   "architectural_notes": [
     "Target platform is web (React) rather than Expo/React Native.",
@@ -315,6 +315,30 @@
         "REQ-42"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-fix-the-production-frontend-deployment-so-the-frontend-canister-serves-the-vite-production-build-output-frontend-dist-as-static-assets-ensuring-the-deployed-icp0-url-loads-the-react-app-successfully-and-does-not-reference-development-only-paths-like-src-main-tsx",
+      "title": "Fix the production frontend deployment so the frontend canister serves the Vite production build output (frontend/dist) as static assets, ensuring the deployed icp0 URL loads the React app successfully and does not reference development-only paths like /src/main.tsx.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-production-deploy-flow-fails-fast-if-the-build-output-is-not-production-ready-by-running-the-existing-frontend-verification-checks-before-deploying-the-frontend-canister-and-by-ensuring-the-checks-correctly-validate-that-dist-index-html-does-not-reference-src-main-tsx-and-that-required-static-files-are-present",
+      "title": "Ensure the production deploy flow fails fast if the build output is not production-ready by running the existing frontend verification checks before deploying the frontend canister, and by ensuring the checks correctly validate that dist/index.html does not reference /src/main.tsx and that required static files are present.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-a-successful-rebuild-and-redeploy-of-both-backend-and-frontend-provide-the-working-public-app-url-in-the-exact-format-https-your-frontend-canister-id-icp0-io-so-the-user-can-use-it-for-pwa-to-apk-wrapping",
+      "title": "After a successful rebuild and redeploy of both backend and frontend, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io so the user can use it for PWA-to-APK wrapping.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -465,6 +489,38 @@
       "summary": "Implement a backend-persisted comments system for feed posts: store comments per feed item so that all users can fetch and view them, and authenticated users can add new comments (support text plus optional attached media: image/video).",
       "reqIds": [
         "REQ-39"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Rebuild and redeploy both backend and frontend so the production deployment generates a working public ICP URL and the app loads successfully from the frontend canister.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Fix the frontend production asset serving so the deployed frontend canister serves the Vite production build output (frontend/dist) instead of source files, ensuring the deployed app shell does not reference the development entrypoint /src/main.tsx.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Make the deploy fail fast when the frontend build output is not production-ready by running the existing frontend verification scripts as a required gate before deploying the frontend canister.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "After the successful rebuild and redeploy, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io.",
+      "reqIds": [
+        "REQ-49"
       ],
       "status": "pending"
     }

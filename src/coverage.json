@@ -1,97 +1,64 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T20:34:56.272Z",
+  "generatedAt": "2026-02-15T21:53:24.274Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 3,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-39",
-        "summary": "Implement a backend-persisted comments system for feed posts: store comments per feed item so that all users can fetch and view them, and authenticated users can add new comments (support text plus optional attached media: image/video).",
-        "status": "unknown",
-        "plannedFiles": [],
+        "id": "REQ-46",
+        "summary": "Rebuild and redeploy both backend and frontend so the production deployment generates a working public ICP URL and the app loads successfully from the frontend canister.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/scripts/deploy-frontend-prod.sh",
+          "frontend/DEPLOYMENT.md"
+        ],
         "matchedFiles": []
       },
       {
-        "id": "REQ-40",
-        "summary": "Replace the current \"Comments coming soon!\" placeholder with a TikTok-style comments screen that opens from the feed (bottom sheet style), displays the comment list for the selected post, and allows authenticated users to add a new comment with optional media attachment (image/video).",
-        "status": "implemented",
+        "id": "REQ-47",
+        "summary": "Fix the frontend production asset serving so the deployed frontend canister serves the Vite production build output (frontend/dist) instead of source files, ensuring the deployed app shell does not reference the development entrypoint /src/main.tsx.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/comments/CommentsSheet.tsx",
-          "frontend/src/components/comments/CommentList.tsx",
-          "frontend/src/components/comments/CommentComposer.tsx",
-          "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/InteractionRail.tsx"
+          "frontend/scripts/verify-dist-shell.ts",
+          "frontend/scripts/verify-frontend-canister-assets-config.ts",
+          "frontend/DEPLOYMENT.md"
         ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/comments/CommentsSheet.tsx",
-          "frontend/src/components/comments/CommentList.tsx",
-          "frontend/src/components/comments/CommentComposer.tsx",
-          "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/InteractionRail.tsx"
-        ]
+        "matchedFiles": []
       },
       {
-        "id": "REQ-41",
-        "summary": "Implement per-post shareable links that include the post ID and, when opened, load the main feed and automatically scroll to the referenced post.",
-        "status": "implemented",
+        "id": "REQ-48",
+        "summary": "Make the deploy fail fast when the frontend build output is not production-ready by running the existing frontend verification scripts as a required gate before deploying the frontend canister.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/utils/urlParams.ts",
-          "frontend/src/utils/shareLinks.ts",
-          "frontend/src/components/feed/VideoFeed.tsx"
+          "frontend/scripts/deploy-frontend-prod.sh",
+          "frontend/scripts/verify-dist-shell.ts",
+          "frontend/scripts/verify-frontend-canister-assets-config.ts"
         ],
-        "matchedFiles": [
-          "frontend/src/utils/urlParams.ts",
-          "frontend/src/utils/shareLinks.ts",
-          "frontend/src/components/feed/VideoFeed.tsx"
-        ]
+        "matchedFiles": []
       },
       {
-        "id": "REQ-42",
-        "summary": "Replace the current \"Share feature coming soon!\" placeholder with a functional share flow that supports copying the per-post link and, where available, invoking the native share sheet.",
-        "status": "implemented",
+        "id": "REQ-49",
+        "summary": "After the successful rebuild and redeploy, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/components/share/ShareMenu.tsx",
-          "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/InteractionRail.tsx",
-          "frontend/src/utils/shareLinks.ts"
+          "frontend/scripts/deploy-frontend-prod.sh",
+          "frontend/scripts/print-icp0-url.sh"
         ],
-        "matchedFiles": [
-          "frontend/src/components/share/ShareMenu.tsx",
-          "frontend/src/components/feed/FeedItem.tsx",
-          "frontend/src/components/feed/InteractionRail.tsx",
-          "frontend/src/utils/shareLinks.ts"
-        ]
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/comments/CommentComposer.tsx",
-    "frontend/src/components/comments/CommentList.tsx",
-    "frontend/src/components/comments/CommentsSheet.tsx",
-    "frontend/src/components/feed/FeedItem.tsx",
-    "frontend/src/components/feed/InteractionRail.tsx",
-    "frontend/src/components/feed/VideoFeed.tsx",
-    "frontend/src/components/share/ShareMenu.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/utils/shareLinks.ts",
     "frontend/src/utils/urlParams.ts",
     "project_state.json",
     "scratch/component-selection.json",

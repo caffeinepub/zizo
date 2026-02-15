@@ -38,12 +38,14 @@ try {
 // Validate canisters configuration exists
 if (!dfxConfig.canisters) {
   console.error('❌ ERROR: dfx.json does not contain "canisters" configuration');
+  console.error('   The dfx.json file must define canister configurations.\n');
   process.exit(1);
 }
 
 // Validate frontend canister exists
 if (!dfxConfig.canisters.frontend) {
   console.error('❌ ERROR: dfx.json does not contain "frontend" canister configuration');
+  console.error('   Add a frontend canister configuration to dfx.json.\n');
   process.exit(1);
 }
 
@@ -80,7 +82,8 @@ if (!hasDistSource) {
   console.error(`   Current source: ${JSON.stringify(sources)}`);
   console.error('   Required source: ["frontend/dist"]');
   console.error('\n   Fix: In dfx.json, set:');
-  console.error('   "frontend": { "source": ["frontend/dist"], ... }\n');
+  console.error('   "frontend": { "source": ["frontend/dist"], ... }');
+  console.error('\n   This ensures the canister serves the built assets, not source files.\n');
   hasErrors = true;
 } else {
   console.log('✅ Frontend canister source includes "frontend/dist"');
@@ -90,6 +93,7 @@ if (hasSrcSource) {
   console.error('❌ ERROR: Frontend canister source includes "/src" directory');
   console.error(`   Current source: ${JSON.stringify(sources)}`);
   console.error('   This will deploy source files instead of the production build!');
+  console.error('   The deployed app will fail to load because /src/main.tsx is not bundled.');
   console.error('\n   Fix: In dfx.json, change source to:');
   console.error('   "frontend": { "source": ["frontend/dist"], ... }\n');
   hasErrors = true;
@@ -101,11 +105,12 @@ const dependencies = Array.isArray(frontendConfig.dependencies)
   : [];
 
 if (!dependencies.includes('backend')) {
-  console.error('❌ WARNING: Frontend canister does not depend on "backend"');
+  console.error('⚠️  WARNING: Frontend canister does not depend on "backend"');
   console.error(`   Current dependencies: ${JSON.stringify(dependencies)}`);
   console.error('   Recommended: ["backend"]');
   console.error('\n   Fix: In dfx.json, set:');
-  console.error('   "frontend": { "dependencies": ["backend"], ... }\n');
+  console.error('   "frontend": { "dependencies": ["backend"], ... }');
+  console.error('\n   This ensures the backend is deployed before the frontend.\n');
   // This is a warning, not a hard error
   console.log('⚠️  Continuing despite missing backend dependency...\n');
 } else {
@@ -127,11 +132,15 @@ if (hasErrors) {
   console.error('         "dependencies": ["backend"]');
   console.error('       }');
   console.error('     }');
-  console.error('   }\n');
+  console.error('   }');
+  console.error('\n   This configuration ensures:');
+  console.error('   - The canister serves static assets (type: "assets")');
+  console.error('   - Assets are loaded from the build output (source: ["frontend/dist"])');
+  console.error('   - Backend is deployed first (dependencies: ["backend"])\n');
   process.exit(1);
 } else {
   console.log('✅ CONFIGURATION VERIFICATION PASSED');
   console.log('   The frontend canister is correctly configured.');
-  console.log('   Ready to deploy the production build.\n');
+  console.log('   Ready to deploy the production build to Internet Computer.\n');
   process.exit(0);
 }

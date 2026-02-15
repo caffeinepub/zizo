@@ -6,13 +6,12 @@ import Text "mo:core/Text";
 import Iter "mo:core/Iter";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-import Migration "migration";
+
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 
-(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -208,6 +207,9 @@ actor {
   };
 
   public query ({ caller }) func getComments(feedItemId : Nat) : async [Comment] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view comments");
+    };
     switch (comments.get(feedItemId)) {
       case (null) { [] };
       case (?existingComments) { existingComments.toArray() };

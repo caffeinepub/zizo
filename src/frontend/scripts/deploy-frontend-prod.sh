@@ -52,12 +52,29 @@ if [ $? -eq 0 ]; then
   echo "✅ DEPLOYMENT SUCCESSFUL"
   echo "=================================================="
   echo ""
-  echo "Next steps:"
-  echo "1. Open your frontend canister URL in an incognito/private window"
+  
+  # Extract and display the frontend canister ID
+  FRONTEND_CANISTER_ID=$(dfx canister id frontend 2>/dev/null || echo "")
+  
+  if [ -n "$FRONTEND_CANISTER_ID" ]; then
+    echo "🌐 Your app is now live at:"
+    echo ""
+    echo "   https://${FRONTEND_CANISTER_ID}.icp0.io"
+    echo ""
+    echo "=================================================="
+    echo ""
+  fi
+  
+  echo "✅ Verification checklist:"
+  echo "1. Open the URL above in an incognito/private window"
   echo "2. Verify the page loads without errors"
   echo "3. Open browser DevTools → Network tab"
   echo "4. Confirm requests to /assets/index-*.js return HTTP 200"
   echo "5. Confirm NO requests to /src/main.tsx"
+  echo ""
+  echo "📱 To convert to APK:"
+  echo "   Use the URL above with PWABuilder (https://www.pwabuilder.com/)"
+  echo "   or Bubblewrap to generate an Android APK."
   echo ""
 else
   echo ""

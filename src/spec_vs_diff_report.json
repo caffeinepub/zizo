@@ -1,49 +1,68 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T20:34:56.268Z",
-  "summary": "Diff adds a comments UI (bottom-sheet), share menu with copy/native share, deep-link handling via postId URL parameter, and introduces backend state/migration scaffolding for comments. However, the diff summary does not provide evidence that the backend comment fetch/add APIs (with safe errors and documented ordering) were actually implemented in backend/main.mo, and deep-link scrolling does not clearly use the VideoFeed imperative handle as specified. Also, an unrequested Download action was added to the interaction rail.",
+  "generatedAt": "2026-02-15T21:53:24.271Z",
+  "summary": "The diff does not implement the deployment/asset-serving changes required to regenerate a working icp0.io public URL. Instead, it mainly adds/changes application features (backend feed/comments/profiles and frontend URL param utilities) that are unrelated to the requested rebuild/redeploy and frontend canister production-asset serving fixes.",
   "missing_requirements": [
     {
-      "id": "REQ-39",
-      "requirement": "Backend exposes APIs to fetch comments for a given feed item ID (with consistent documented ordering) and add a comment (authenticated), with safe user-actionable errors when feed item ID does not exist, persisting optional media via ExternalBlob.",
-      "reason": "backend/main.mo shows new Comment type and comments map initialization and adds empty comments list on addMedia, but the diff summary does not show any public methods like getComments/addComment, nor any explicit safe error handling for unknown feed item IDs or documented ordering for returned comments.",
+      "id": "REQ-46",
+      "requirement": "Rebuild and redeploy both backend and frontend so the production deployment generates a working public ICP URL and the app loads successfully from the frontend canister.",
+      "reason": "No changes in the diff summary indicate updates to the build/deploy pipeline, canister configs, or deployment scripts to ensure a fresh successful deploy and working frontend-canister-served app.",
       "evidence": [
-        "backend/main.mo"
+        "<file-diff>: only modified backend/main.mo, frontend/src/utils/urlParams.ts, project_state.json; no deploy/config files shown"
       ]
     },
     {
-      "id": "REQ-41",
-      "requirement": "Opening a share URL loads the feed and programmatically scrolls to the referenced post using the existing VideoFeed imperative handle (scrollToItemId).",
-      "reason": "VideoFeed implements the imperative handle, but the deep-link effect directly looks up the DOM element and calls scrollIntoView instead of invoking scrollToItemId. The acceptance criteria explicitly calls for using the imperative handle.",
+      "id": "REQ-47",
+      "requirement": "Fix the frontend production asset serving so the deployed frontend canister serves the Vite production build output (frontend/dist) instead of source files, and does not reference /src/main.tsx.",
+      "reason": "No evidence of changes to frontend canister asset configuration (e.g., assets config, canister config, build output wiring) or anything ensuring dist/index.html and dist/assets/* are served in production.",
       "evidence": [
-        "frontend/src/components/feed/VideoFeed.tsx"
+        "<file-diff>: no changes shown to canister/frontend asset configuration or build output paths; only frontend/src/utils/urlParams.ts modified"
+      ]
+    },
+    {
+      "id": "REQ-48",
+      "requirement": "Make deploy fail fast when frontend build output is not production-ready by running existing verification scripts (verify-dist-shell.ts and verify-frontend-canister-assets-config.ts) as a required gate before deploying the frontend canister.",
+      "reason": "No evidence of any deploy script, CI pipeline, or command changes to run the verification scripts prior to frontend canister deployment, nor any added failure gating/error messaging.",
+      "evidence": [
+        "<file-diff>: no changes shown to scripts, CI, package.json, dfx configuration, or deploy tooling"
+      ]
+    },
+    {
+      "id": "REQ-49",
+      "requirement": "After successful rebuild and redeploy, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io.",
+      "reason": "The diff contains no output/log/documentation that provides a concrete deployed frontend canister id / icp0 URL.",
+      "evidence": [
+        "<file-diff>: no release/deploy output or documentation files modified to include the final URL"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Download button/flow added to the interaction rail (downloadMedia utility invoked, download toasts shown).",
-      "reason": "BuildRequest does not mention adding a Download interaction; only Like, Comment, and Share changes are requested.",
+      "description": "Backend changes adding/expanding features such as comments storage/types, user profiles, media/blob storage mixins, and additional authorization-related behaviors not tied to deployment/public URL regeneration.",
+      "reason": "BuildRequest explicitly focuses on rebuild/redeploy and frontend production asset serving and deploy gating; it lists non-goals for unrelated feed/product features. The backend changes appear feature-oriented rather than deployment-oriented.",
       "evidence": [
-        "frontend/src/components/feed/InteractionRail.tsx"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Frontend utility for URL parameter parsing plus sessionStorage persistence helpers (getPersistedUrlParameter, storeSessionParameter, etc.).",
+      "reason": "Not requested by REQ-46..REQ-49, which are about production asset serving and deploy gating for the frontend canister, not URL parameter/session storage utilities.",
+      "evidence": [
+        "frontend/src/utils/urlParams.ts"
+      ]
+    },
+    {
+      "description": "Project metadata updated to describe expanding the app with a TikTok-style comments system and share feature with deep links.",
+      "reason": "This directly conflicts with the BuildRequest non-goals (no new feed/product features unrelated to deployment/public URL regeneration) and is not part of REQ-46..REQ-49.",
+      "evidence": [
+        "project_state.json (summary field)"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.78,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
-    "frontend-file-summaries.txt",
-    "frontend/src/components/comments/CommentComposer.tsx",
-    "frontend/src/components/comments/CommentList.tsx",
-    "frontend/src/components/comments/CommentsSheet.tsx",
-    "frontend/src/components/feed/FeedItem.tsx",
-    "frontend/src/components/feed/InteractionRail.tsx",
-    "frontend/src/components/feed/VideoFeed.tsx",
-    "frontend/src/components/share/ShareMenu.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/utils/shareLinks.ts",
     "frontend/src/utils/urlParams.ts",
     "project_state.json"
   ]

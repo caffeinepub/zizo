@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add a backend-persisted comments system with a TikTok-style comments UI, and implement per-post share links that deep-link to and auto-scroll to a specific post in the main feed.
+**Goal:** Rebuild and redeploy the app on the Internet Computer to regenerate a working public icp0.io URL and ensure the frontend canister serves the correct production build.
 
 **Planned changes:**
-- Backend: Add persisted comment storage per feed item, plus APIs to fetch comments for a post and add a new comment (authenticated), supporting text and optional image/video attachments stored via the existing blob storage approach.
-- Frontend: Replace the “Comments coming soon!” placeholder with a bottom-sheet (TikTok-style) comments screen that loads comments, shows loading/error states, and lets authenticated users post comments with optional media attachments.
-- Frontend: Update feed interaction UI so the comment count reflects the number of comments for each post (at least after viewing/posting).
-- Frontend: Implement per-post shareable URLs that include the post ID; on open, load the main feed and auto-scroll to the referenced post, with a not-found message if missing and URL parameter neutralization after handling.
-- Frontend: Replace the “Share feature coming soon!” placeholder with a share menu that supports “Copy link” (clipboard + success/failure toast) and uses the native share sheet when available.
+- Rebuild and redeploy both backend and frontend canisters to produce a fresh, working public ICP URL.
+- Fix frontend production asset serving so the deployed frontend canister serves the Vite build output from `frontend/dist` (not source files) and does not reference `/src/main.tsx`.
+- Add a fail-fast deployment gate by running the existing frontend dist verification scripts before deploying the frontend canister.
+- Output the final working public app URL in the format `https://<frontend-canister-id>.icp0.io`.
 
-**User-visible outcome:** Users can open a TikTok-style comments panel on any post to read and (when logged in) add text comments with optional image/video attachments, and can share a post via a unique link that opens the feed and jumps directly to that post, with copy-link and native sharing support.
+**User-visible outcome:** The app loads successfully in a browser from the deployed frontend canister at a working `https://<frontend-canister-id>.icp0.io` URL (not blank, not a raw link page, and not “Canister ID Not Resolved”).

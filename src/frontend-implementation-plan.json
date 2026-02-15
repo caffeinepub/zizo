@@ -1,107 +1,94 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "TikTok-style comments bottom-sheet + per-post share links with deep-link auto-scroll",
+  "title": "Fix ICP frontend canister production asset serving and deployment gating",
   "requirements": [
     {
-      "id": "REQ-40",
-      "summary": "Replace comments placeholder with a TikTok-style bottom-sheet comments UI that lists comments and lets authenticated users post text with optional image/video attachment.",
+      "id": "REQ-46",
+      "summary": "Ensure the production redeploy flow rebuilds and redeploys in an order that results in a working icp0 URL and a loadable frontend canister app.",
       "acceptanceCriteria": [
-        "Tapping the Comment button on any feed item opens a bottom-sheet style comments UI (TikTok-like) instead of showing a \"coming soon\" toast.",
-        "The comments UI fetches and renders backend comments for the selected feed item and shows a loading state and an error state with English user-facing text.",
-        "The comment composer allows entering text (including emojis/mentions as typed text) and optionally attaching an image or video file; submitting creates the comment via the backend and updates the list without requiring a full page reload.",
-        "If the user is not authenticated, the UI prevents posting and shows an English prompt to log in (viewing comments remains possible if backend allows it).",
-        "The comment count shown in the interaction rail updates to reflect the number of comments for that post (at least after opening/closing or after posting; ideally live within the session)."
+        "A fresh deployment completes successfully for both backend and frontend.",
+        "The deployed app loads in a browser from the frontend canister without showing a blank page, a raw link page, or “Canister ID Not Resolved”."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/scripts/deploy-frontend-prod.sh",
           "operation": "modify",
-          "description": "Add React Query hooks for comments: fetching comments for a feed item (using backend getComments) and adding a comment (using backend addComment). Ensure mutations update/invalidate the comments cache and provide error surfaces that the UI can display. Verify the blob-storage component's usage instructions before implementing."
+          "description": "Update the production deploy script to redeploy the full app (deploy backend first, then frontend) from a single flow, while keeping the existing build + verification gates before the frontend canister deploy; ensure the script surfaces clear failures and outputs the final icp0 URL upon success."
         },
         {
-          "path": "frontend/src/components/comments/CommentsSheet.tsx",
-          "operation": "create",
-          "description": "Create a bottom-sheet style comments container component (TikTok-like) that can be opened from a feed item, renders header + list + composer area, and supports loading/error/empty states in English. Use existing shadcn-ui primitives already present in the repo (do not modify ui components). Verify the shadcn-ui component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/comments/CommentList.tsx",
-          "operation": "create",
-          "description": "Create a comment list renderer that maps backend Comment items (text + optional media) into a scrollable list with stable keys, and renders media via ExternalBlob.getDirectURL() for efficient display. Verify the blob-storage component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/comments/CommentComposer.tsx",
-          "operation": "create",
-          "description": "Create a composer UI with a text input, optional image/video file picker, and a submit action that posts via the add-comment hook; when unauthenticated, disable posting and show an English prompt to log in. Convert selected files to MediaType using ExternalBlob.fromBytes and support basic progress wiring if desired. Verify the authorization and blob-storage components' usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/feed/FeedItem.tsx",
+          "path": "frontend/DEPLOYMENT.md",
           "operation": "modify",
-          "description": "Wire the new CommentsSheet into each feed item: manage open/close state, open it from the InteractionRail, and keep a per-item commentCount state that updates after fetch/post so the interaction rail count reflects the latest known value."
-        },
-        {
-          "path": "frontend/src/components/feed/InteractionRail.tsx",
-          "operation": "modify",
-          "description": "Replace the \"Comments coming soon!\" toast with a callback that opens the CommentsSheet for the current item, and display a real comment count value passed from FeedItem instead of hard-coded 0."
+          "description": "Expand deployment documentation to explicitly describe the correct production redeploy sequence (backend then frontend) and how to confirm the frontend canister serves the production bundle (no /src/main.tsx, assets load from dist)."
         }
       ]
     },
     {
-      "id": "REQ-41",
-      "summary": "Add per-post share links that deep-link into the feed and auto-scroll to the referenced post, then neutralize the deep-link parameter.",
+      "id": "REQ-47",
+      "summary": "Fix production asset serving so the deployed frontend canister serves the Vite production build output from dist rather than source files.",
       "acceptanceCriteria": [
-        "Tapping Share on a feed item generates a unique share URL that encodes the feed item ID (e.g., via a query parameter) and works when pasted into a new tab/browser.",
-        "Opening a share URL loads the main feed and, once items are available, programmatically scrolls to the referenced post using the existing `VideoFeed` imperative handle (`scrollToItemId`).",
-        "If the referenced post ID is not found in the loaded feed, the app shows an English message/toast indicating the post could not be found.",
-        "After handling the deep link, the app removes or neutralizes the deep-link parameter to avoid repeated auto-scrolling on subsequent navigation within the same session (using the existing URL/session utilities where appropriate)."
+        "Production deployment serves dist/index.html and dist/assets/* and does not serve or reference /src/main.tsx.",
+        "Opening the deployed icp0 URL shows the React app UI and loads bundled JS/CSS from /assets/* with HTTP 200 responses."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/urlParams.ts",
+          "path": "frontend/scripts/verify-dist-shell.ts",
           "operation": "modify",
-          "description": "Extend URL utilities with a safe function to remove/neutralize a non-secret deep-link parameter (e.g., postId) from the current URL without reloading (support regular query string and hash query forms), so auto-scroll does not repeat on subsequent navigation."
+          "description": "Strengthen dist shell verification to more strictly validate that dist/index.html references only bundled /assets/* outputs and does not reference /src/main.tsx, and improve failure messages to clearly indicate that serving source files indicates a misconfigured frontend assets canister."
         },
         {
-          "path": "frontend/src/utils/shareLinks.ts",
-          "operation": "create",
-          "description": "Add a small utility to build the per-post share URL using window.location origin/path and a deep-link parameter encoding the feed item ID; keep it consistent across the app for copy/share actions."
+          "path": "frontend/scripts/verify-frontend-canister-assets-config.ts",
+          "operation": "modify",
+          "description": "Tighten frontend canister asset configuration checks to hard-fail on any configuration that could cause source-file serving (e.g., missing dist source, presence of src in sources), and emit explicit remediation instructions referencing the required assets-canister dist configuration."
         },
         {
-          "path": "frontend/src/components/feed/VideoFeed.tsx",
+          "path": "frontend/DEPLOYMENT.md",
           "operation": "modify",
-          "description": "On initial load when feed items become available, detect a deep-link parameter for a post ID, then invoke the existing imperative handle behavior (scrollToItemId) to scroll to the post; if not found, show an English toast; finally clear/neutralize the deep-link parameter to prevent repeated scrolling."
+          "description": "Document the expected production behavior (dist/index.html served; bundled JS/CSS under /assets/*) and add a troubleshooting section for the specific failure mode where the deployed shell references /src/main.tsx."
         }
       ]
     },
     {
-      "id": "REQ-42",
-      "summary": "Replace share placeholder with an in-app share menu supporting copy link and native share sheet when available.",
+      "id": "REQ-48",
+      "summary": "Make deploy fail fast by enforcing existing frontend verification scripts as a required gate before deploying the frontend canister.",
       "acceptanceCriteria": [
-        "Tapping Share no longer shows a \"coming soon\" toast and instead opens a small in-app share menu (or action UI) with at minimum: Copy link.",
-        "Copy link writes the share URL to the clipboard and shows an English success/failure toast.",
-        "If `navigator.share` is available, the share UI offers a \"Share\" action that invokes the native share sheet using the per-post share URL.",
-        "If `navigator.share` is unavailable, the UI gracefully omits/disabled that option and still allows copying the link."
+        "The production deploy flow runs the equivalent of frontend/scripts/verify-dist-shell.ts and frontend/scripts/verify-frontend-canister-assets-config.ts before deploying the frontend canister.",
+        "If dist/index.html references /src/main.tsx or required dist static files are missing, the deploy fails with a clear error message and does not proceed to deploy the broken frontend."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/share/ShareMenu.tsx",
+          "path": "frontend/scripts/deploy-frontend-prod.sh",
+          "operation": "modify",
+          "description": "Harden the deploy script to be an explicit gate (strict shell options, clear phase banners, and guaranteed non-zero exit on verification failure) so it never proceeds to deploy the frontend canister when verification fails."
+        },
+        {
+          "path": "frontend/scripts/verify-dist-shell.ts",
+          "operation": "modify",
+          "description": "Ensure verification failures are concise and actionable (explicitly call out /src/main.tsx references and missing required dist assets) so the deploy gate error is clear."
+        },
+        {
+          "path": "frontend/scripts/verify-frontend-canister-assets-config.ts",
+          "operation": "modify",
+          "description": "Ensure the canister-assets configuration verification clearly reports which dfx.json fields are invalid for production asset serving and exits non-zero to stop deployment."
+        }
+      ]
+    },
+    {
+      "id": "REQ-49",
+      "summary": "Provide a reliable way to output the working icp0 public app URL after redeploy in the exact required format.",
+      "acceptanceCriteria": [
+        "The final output includes a single, concrete icp0 URL in the format https://<frontend-canister-id>.icp0.io (not a caffeine.xyz preview URL)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/scripts/deploy-frontend-prod.sh",
+          "operation": "modify",
+          "description": "Adjust the successful deploy output to print a single concrete icp0 URL line in the exact format https://<frontend-canister-id>.icp0.io, and persist it to a simple text file under frontend/ so it can be copied/pasted without ambiguity."
+        },
+        {
+          "path": "frontend/scripts/print-icp0-url.sh",
           "operation": "create",
-          "description": "Create an in-app share action UI (e.g., dialog/popover) that offers Copy link and conditionally a Native Share action when navigator.share exists, with English success/failure toasts. Use existing shadcn-ui primitives already present in the repo (do not modify ui components). Verify the shadcn-ui component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/feed/FeedItem.tsx",
-          "operation": "modify",
-          "description": "Add state and wiring to open the ShareMenu for the current feed item, passing the computed per-post share URL and any metadata needed for navigator.share."
-        },
-        {
-          "path": "frontend/src/components/feed/InteractionRail.tsx",
-          "operation": "modify",
-          "description": "Replace the \"Share feature coming soon!\" toast with a callback that opens the ShareMenu for the current item."
-        },
-        {
-          "path": "frontend/src/utils/shareLinks.ts",
-          "operation": "modify",
-          "description": "Ensure the share-link utility supports the exact URL shape used by the ShareMenu and the deep-link auto-scroll logic (single source of truth for parameter name and formatting)."
+          "description": "Create a small helper script that reads the deployed frontend canister id via dfx and prints exactly one URL in the format https://<frontend-canister-id>.icp0.io for easy retrieval after deployment."
         }
       ]
     }

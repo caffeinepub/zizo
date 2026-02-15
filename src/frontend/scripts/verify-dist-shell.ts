@@ -43,7 +43,8 @@ const indexHtml = readFileSync(INDEX_HTML, 'utf-8');
 if (indexHtml.includes('/src/main.tsx')) {
   console.error('❌ ERROR: dist/index.html still references /src/main.tsx');
   console.error('   This is the development entry point and will not work in production.');
-  console.error('   The build process did not transform index.html correctly.\n');
+  console.error('   The build process did not transform index.html correctly.');
+  console.error('   Ensure Vite is configured to build to dist/ with proper asset handling.\n');
   hasErrors = true;
 } else {
   console.log('✅ index.html does not reference /src/main.tsx (development entry)');
@@ -54,18 +55,21 @@ if (indexHtml.match(/\/assets\/index-[a-zA-Z0-9]+\.js/)) {
   console.log('✅ index.html references bundled JavaScript in /assets/');
 } else {
   console.error('❌ ERROR: dist/index.html does not reference /assets/index-*.js');
-  console.error('   The build output is missing the bundled JavaScript reference.\n');
+  console.error('   The build output is missing the bundled JavaScript reference.');
+  console.error('   Vite should transform the script tag to point to the bundled output.\n');
   hasErrors = true;
 }
 
 // Check 3: Verify required static files exist
-console.log('\n📦 Checking required static files...');
+console.log('\n📦 Checking required static files in dist/...');
 for (const file of REQUIRED_STATIC_FILES) {
   const filePath = join(DIST_DIR, file);
   if (existsSync(filePath)) {
     console.log(`✅ ${file}`);
   } else {
     console.error(`❌ ERROR: Missing required file: ${file}`);
+    console.error(`   Expected at: ${filePath}`);
+    console.error(`   Ensure this file exists in frontend/public/ before building.\n`);
     hasErrors = true;
   }
 }
@@ -75,11 +79,16 @@ console.log('\n' + '='.repeat(60));
 if (hasErrors) {
   console.error('❌ VERIFICATION FAILED');
   console.error('   The build output is NOT ready for deployment.');
-  console.error('   Fix the errors above before deploying.\n');
+  console.error('   Fix the errors above before deploying.');
+  console.error('\n   Common fixes:');
+  console.error('   - Ensure all required assets exist in frontend/public/');
+  console.error('   - Run `npm run build` to regenerate dist/');
+  console.error('   - Check that vite.config.ts has outDir: "dist"\n');
   process.exit(1);
 } else {
   console.log('✅ VERIFICATION PASSED');
   console.log('   The build output is ready for deployment to the frontend canister.');
-  console.log('   The dist/ directory contains all required files.\n');
+  console.log('   The dist/ directory contains all required files and references.');
+  console.log('   Bundled assets are correctly referenced in /assets/\n');
   process.exit(0);
 }

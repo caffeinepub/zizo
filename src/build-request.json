@@ -1,116 +1,89 @@
 {
   "kind": "build_request",
-  "title": "Implement TikTok-style comments + per-post share links with deep-link auto-scroll",
-  "priority": "normal",
+  "title": "Rebuild and redeploy to regenerate a working ICP public URL (icp0.io)",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-39",
-      "text": "Implement a backend-persisted comments system for feed posts: store comments per feed item so that all users can fetch and view them, and authenticated users can add new comments (support text plus optional attached media: image/video).",
-      "target": "backend",
+      "id": "REQ-46",
+      "text": "Rebuild and redeploy both backend and frontend so the production deployment generates a working public ICP URL and the app loads successfully from the frontend canister.",
+      "target": "both",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "For comments I want a full comment screen list of comment + ability to add comments",
-          "Comment should be stored in backend so everyone can see them",
-          "Comment shield support text, emojis ,stickers ,mentions ,Media ,image or videos"
+          "Regenerate the ICP public app URL",
+          "Yes"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes an API to fetch comments for a given feed item ID and returns comments in chronological order (oldest to newest or newest to oldest, but consistent and documented in code).",
-        "Backend exposes an API to add a comment for a given feed item ID; it requires an authenticated caller and persists the new comment.",
-        "A comment supports a text field (allowing emojis/mentions as plain text) and an optional media attachment (image or video) stored using the existing blob storage approach (ExternalBlob).",
-        "If a feed item ID does not exist, comment APIs return a safe, user-actionable error (no traps that crash the canister).",
-        "No migration is introduced unless required by compilation/state constraints; existing feed items and like counts remain intact after upgrade."
+        "A fresh deployment completes successfully for both backend and frontend.",
+        "The deployed app loads in a browser from the frontend canister without showing a blank page, a raw link page, or “Canister ID Not Resolved”."
       ]
     },
     {
-      "id": "REQ-40",
-      "text": "Replace the current \"Comments coming soon!\" placeholder with a TikTok-style comments screen that opens from the feed (bottom sheet style), displays the comment list for the selected post, and allows authenticated users to add a new comment with optional media attachment (image/video).",
+      "id": "REQ-47",
+      "text": "Fix the frontend production asset serving so the deployed frontend canister serves the Vite production build output (frontend/dist) instead of source files, ensuring the deployed app shell does not reference the development entrypoint /src/main.tsx.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "When I tap on the comment button it says coming soon",
-          "For comments I want a full comment screen list of comment + ability to add comments",
-          "It should be a tiktok style",
-          "Comment shield support text, emojis ,stickers ,mentions ,Media ,image or videos"
+          "Regenerate the ICP public app URL"
         ]
       },
       "acceptanceCriteria": [
-        "Tapping the Comment button on any feed item opens a bottom-sheet style comments UI (TikTok-like) instead of showing a \"coming soon\" toast.",
-        "The comments UI fetches and renders backend comments for the selected feed item and shows a loading state and an error state with English user-facing text.",
-        "The comment composer allows entering text (including emojis/mentions as typed text) and optionally attaching an image or video file; submitting creates the comment via the backend and updates the list without requiring a full page reload.",
-        "If the user is not authenticated, the UI prevents posting and shows an English prompt to log in (viewing comments remains possible if backend allows it).",
-        "The comment count shown in the interaction rail updates to reflect the number of comments for that post (at least after opening/closing or after posting; ideally live within the session)."
+        "Production deployment serves dist/index.html and dist/assets/* and does not serve or reference /src/main.tsx.",
+        "Opening the deployed icp0 URL shows the React app UI and loads bundled JS/CSS from /assets/* with HTTP 200 responses."
       ]
     },
     {
-      "id": "REQ-41",
-      "text": "Implement per-post shareable links that include the post ID and, when opened, load the main feed and automatically scroll to the referenced post.",
+      "id": "REQ-48",
+      "text": "Make the deploy fail fast when the frontend build output is not production-ready by running the existing frontend verification scripts as a required gate before deploying the frontend canister.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "For sharing every post should have its own unique shareable link",
-          "When someone open a post unique shareable link it showed open the main feed and auto scroll to that post"
+          "Regenerate the ICP public app URL"
         ]
       },
       "acceptanceCriteria": [
-        "Tapping Share on a feed item generates a unique share URL that encodes the feed item ID (e.g., via a query parameter) and works when pasted into a new tab/browser.",
-        "Opening a share URL loads the main feed and, once items are available, programmatically scrolls to the referenced post using the existing `VideoFeed` imperative handle (`scrollToItemId`).",
-        "If the referenced post ID is not found in the loaded feed, the app shows an English message/toast indicating the post could not be found.",
-        "After handling the deep link, the app removes or neutralizes the deep-link parameter to avoid repeated auto-scrolling on subsequent navigation within the same session (using the existing URL/session utilities where appropriate)."
+        "The production deploy flow runs the equivalent of frontend/scripts/verify-dist-shell.ts and frontend/scripts/verify-frontend-canister-assets-config.ts before deploying the frontend canister.",
+        "If dist/index.html references /src/main.tsx or required dist static files are missing, the deploy fails with a clear error message and does not proceed to deploy the broken frontend."
       ]
     },
     {
-      "id": "REQ-42",
-      "text": "Replace the current \"Share feature coming soon!\" placeholder with a functional share flow that supports copying the per-post link and, where available, invoking the native share sheet.",
-      "target": "frontend",
+      "id": "REQ-49",
+      "text": "After the successful rebuild and redeploy, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io.",
+      "target": "unknown",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "When I tap on the share button it also says coming soon",
-          "When I tap on share I expect copy link, native share sheet, in-app share."
+          "Regenerate the ICP public app URL"
         ]
       },
       "acceptanceCriteria": [
-        "Tapping Share no longer shows a \"coming soon\" toast and instead opens a small in-app share menu (or action UI) with at minimum: Copy link.",
-        "Copy link writes the share URL to the clipboard and shows an English success/failure toast.",
-        "If `navigator.share` is available, the share UI offers a \"Share\" action that invokes the native share sheet using the per-post share URL.",
-        "If `navigator.share` is unavailable, the UI gracefully omits/disabled that option and still allows copying the link."
+        "The final output includes a single, concrete icp0 URL in the format https://<frontend-canister-id>.icp0.io (not a caffeine.xyz preview URL)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor; implement new APIs and state in `backend/main.mo` and add `backend/migration.mo` only if a state upgrade requires it.",
-    "Do not edit files under `frontend/src/components/ui` or other paths listed as immutable in SYSTEM_CONTEXT.",
-    "Use English for all user-facing UI text (toasts, labels, errors)."
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if an upgrade requires state migration.",
+    "Do not edit any files under frontend/src/components/ui or any other frontend immutablePaths (compose them instead).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Implementing a full social graph (followers/following) or notifications for comments.",
-    "Implementing true rich-text parsing for mentions/hashtags beyond storing/displaying them as entered text.",
-    "Adding external integrations for sharing (social platform APIs) beyond native share sheet + copy link."
+    "Adding new feed/product features unrelated to deployment or public URL regeneration.",
+    "Using external cloud hosting or non-Internet-Computer deployment targets.",
+    "Replacing Internet Identity authentication with third-party authentication providers."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }
