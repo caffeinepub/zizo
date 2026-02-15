@@ -3,6 +3,7 @@ import type { FeedItem as FeedItemType } from '../../backend';
 import { FeedOverlay } from './FeedOverlay';
 import { InteractionRail } from './InteractionRail';
 import { SpeedControl } from './SpeedControl';
+import { VideoOverlayControls } from './VideoOverlayControls';
 import { useDoubleTap } from '../../hooks/useDoubleTap';
 import { useToggleLike, useUserLikes } from '../../hooks/useQueries';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
@@ -18,6 +19,8 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const toggleLikeMutation = useToggleLike();
   const { identity } = useInternetIdentity();
   const { data: userLikes } = useUserLikes();
@@ -43,6 +46,29 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
     toggleLikeMutation.mutate({ itemId, currentlyLiked: isLiked });
   };
 
+  const handlePlayPause = () => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    if (isPlaying) {
+      videoElement.pause();
+      setIsPlaying(false);
+    } else {
+      videoElement.play().catch((err) => {
+        console.error('Video play error:', err);
+      });
+      setIsPlaying(true);
+    }
+  };
+
+  const handleMuteToggle = () => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    videoElement.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
   const doubleTapRef = useDoubleTap(handleLike);
 
   useEffect(() => {
@@ -51,6 +77,17 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      videoElement.currentTime = 0;
+    };
+
+    videoElement.addEventListener('play', handlePlay);
+    videoElement.addEventListener('pause', handlePause);
+    videoElement.addEventListener('ended', handleEnded);
+
     if (isActive) {
       videoElement.play().catch((err) => {
         console.error('Video play error:', err);
@@ -58,7 +95,14 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
     } else {
       videoElement.pause();
       videoElement.currentTime = 0;
+      setIsPlaying(false);
     }
+
+    return () => {
+      videoElement.removeEventListener('play', handlePlay);
+      videoElement.removeEventListener('pause', handlePause);
+      videoElement.removeEventListener('ended', handleEnded);
+    };
   }, [isActive, isVideo]);
 
   useEffect(() => {
@@ -82,7 +126,7 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
           src={mediaUrl}
           className="absolute inset-0 h-full w-full object-cover"
           loop
-          muted
+          muted={isMuted}
           playsInline
           preload={isActive ? 'auto' : 'metadata'}
         />
@@ -107,6 +151,15 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
             style={{ animationDuration: '0.6s', animationIterationCount: '1' }}
           />
         </div>
+      )}
+
+      {isActive && isVideo && (
+        <VideoOverlayControls
+          isPlaying={isPlaying}
+          isMuted={isMuted}
+          onPlayPause={handlePlayPause}
+          onMuteToggle={handleMuteToggle}
+        />
       )}
 
       <FeedOverlay

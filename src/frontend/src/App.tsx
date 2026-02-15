@@ -9,6 +9,7 @@ import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from './hooks/useQueries';
 import { Toaster } from './components/ui/sonner';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function App() {
   const { identity, isInitializing } = useInternetIdentity();
@@ -19,17 +20,68 @@ export default function App() {
   const isAuthenticated = !!identity;
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
 
-  // Register service worker for PWA
+  // Register service worker with update detection
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log('Service Worker registered:', registration);
-        })
-        .catch((error) => {
+      let refreshing = false;
+
+      // Detect controller change and reload
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js', { 
+            scope: '/',
+            updateViaCache: 'none' // Always check for updates
+          });
+
+          console.log('Service Worker registered:', registration.scope);
+
+          // Check for updates on load
+          registration.update();
+
+          // Check for updates periodically (every 60 seconds)
+          setInterval(() => {
+            registration.update();
+          }, 60000);
+
+          // Handle waiting service worker
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New service worker available
+                  toast.info('Update available', {
+                    description: 'A new version is ready. Refresh to update.',
+                    action: {
+                      label: 'Refresh',
+                      onClick: () => {
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                      }
+                    },
+                    duration: 10000
+                  });
+                }
+              });
+            }
+          });
+
+          // If there's a waiting worker, activate it immediately
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        } catch (error) {
           console.error('Service Worker registration failed:', error);
-        });
+        }
+      };
+
+      registerSW();
     }
   }, []);
 
@@ -47,6 +99,7 @@ export default function App() {
     setPinChallengeOpen(false);
   };
 
+  // Show loading state during initialization
   if (isInitializing) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -58,10 +111,12 @@ export default function App() {
     );
   }
 
+  // Show profile setup for authenticated users without a profile
   if (showProfileSetup) {
     return <ProfileSetup />;
   }
 
+  // Main app shell - always renders for both authenticated and guest users
   return (
     <>
       <div className="relative h-screen w-screen overflow-hidden bg-background safe-area-container">

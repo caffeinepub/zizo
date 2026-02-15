@@ -1,129 +1,28 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T16:46:23.433Z",
-  "summary": "Diff implements in-app video capture UI, a media editor dialog, search UI entry points, download action in the interaction rail, and several feed/upload UX changes. However, several acceptance-criteria items are incomplete or missing: feed should not fall into empty state when actor is unavailable; search lacks required navigation-to-post behavior and (based on shown backend diff) lacks a backend search query; media editing does not actually crop images or trim/edit videos as required; and the 3-step security verification is largely client-only (localStorage) with no backend storage/device trust registration/suspicious-activity enforcement evident.",
+  "generatedAt": "2026-02-15T19:58:02.320Z",
+  "summary": "Most requested functional changes appear implemented: backend addMedia now accepts optional captions and stores empty string when null; frontend upload pipeline no longer requires captions; video “edits” preserve the original file to avoid JPEG conversion and audio stripping; and new in-feed play/pause + mute/unmute overlay controls were added with video lifecycle handling to reduce playback issues. The only requirement not verifiable/implementable from code diff is the build/deploy rerun.",
   "missing_requirements": [
     {
-      "id": "REQ-13",
-      "requirement": "If the actor is not yet available, the UI shows a loading state rather than a permanent empty-state.",
-      "reason": "useFeedItems disables the query when actor is falsy; VideoFeed will render the empty-state when items are undefined and isLoading is false. The diff only shows loading when isLoading is true (actorFetching || query.isLoading). There is no evidence that actorFetching stays true until actor exists, so actor==null could lead to 'No content yet'.",
+      "id": "REQ-38",
+      "requirement": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
+      "reason": "Build/deployment execution and production rollout are not represented in the provided code diff summary; no CI/CD config or deployment artifacts/logs are included to confirm this acceptance criterion.",
       "evidence": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/components/feed/VideoFeed.tsx"
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "requirement": "Surface actionable error details (without exposing sensitive data) when fetchFeedItems() fails, and include a retry action.",
-      "reason": "Retry action is implemented, but the queryFn wraps any backend/network error and rethrows a generic message ('Failed to load feed. Please try again.'), discarding actionable details that could help diagnose issues.",
-      "evidence": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/components/feed/VideoFeed.tsx"
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "requirement": "While uploading, the Upload dialog displays progress feedback and a clear busy state (disable inputs/buttons).",
-      "reason": "Progress tracking is present (uploadProgress, onProgress) and isUploading is computed, but the truncated UploadDialog snippet does not show inputs/buttons being disabled during isUploading (e.g., file input, caption textarea, submit/cancel buttons).",
-      "evidence": [
-        "frontend/src/components/feed/UploadDialog.tsx"
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "requirement": "Backend exposes a query method to search server-side across captions and creator handles and returns both image and video posts.",
-      "reason": "The shown backend/main.mo diff includes feed and like/profile changes but no visible search query method. Frontend adds a search dialog and a hook reference, but server-side search implementation is not evidenced in the backend diff excerpt.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/components/search/SearchDialog.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "requirement": "Selecting a search result navigates the user to that post in the vertical feed.",
-      "reason": "SearchDialog currently states navigation is a placeholder and only shows a toast ('Navigating to post ...') then closes the dialog, with no actual scroll-to-item call or routing integration shown.",
-      "evidence": [
-        "frontend/src/components/search/SearchDialog.tsx",
-        "frontend/src/components/feed/VideoFeed.tsx"
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "requirement": "In-app capture is integrated into the existing upload flow with preview and permission-denied fallback to file upload.",
-      "reason": "Capture/preview/permission messaging is implemented, but the integration into upload flow is only partially evidenced due to truncation; UploadDialog shows showCapture and VideoCapturePanel usage, but the user-facing entry option and full flow completion are not fully visible in the truncated portion.",
-      "evidence": [
-        "frontend/src/components/capture/VideoCapturePanel.tsx",
-        "frontend/src/components/feed/UploadDialog.tsx"
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "requirement": "Image cropping is applied before upload and reflected in the uploaded media.",
-      "reason": "MediaEditorDialog tracks cropArea, but applyImageEdits ignores the crop option and draws the full image without cropping, so crop edits are not applied to the output file.",
-      "evidence": [
-        "frontend/src/components/editor/MediaEditorDialog.tsx",
-        "frontend/src/utils/mediaEdits.ts"
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "requirement": "Video trimming and edits are reflected in the media that is uploaded (not just a preview).",
-      "reason": "applyVideoEdits explicitly does not implement trimming and returns a JPEG generated from a single frame (not an edited video file). This fails trimming and fails to upload an edited video.",
-      "evidence": [
-        "frontend/src/utils/mediaEdits.ts",
-        "frontend/src/components/editor/MediaEditorDialog.tsx"
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "requirement": "Backend stores verification setup per user and can require verification for sensitive actions; device confirmation is registered with backend; suspicious-activity PIN challenge blocks action until verified.",
-      "reason": "Security setup (PIN + questions) and device id are stored only in localStorage via hooks; there is no evidence of backend methods/data structures for storing verification setup, registering trusted devices, or enforcing verification. Pin challenge appears to be purely client-side and not tied to backend 'suspicious activity' detection or gating sensitive backend calls.",
-      "evidence": [
-        "frontend/src/hooks/useSecuritySetup.ts",
-        "frontend/src/hooks/useDeviceTrust.ts",
-        "frontend/src/components/security/SecuritySetupDialog.tsx",
-        "frontend/src/components/security/PinChallengeDialog.tsx",
-        "backend/main.mo",
-        "frontend/src/components/feed/UploadButton.tsx",
-        "frontend/src/App.tsx"
+        "<file-diff>: No build/deploy scripts, pipeline changes, or deployment artifacts shown"
       ]
     }
   ],
-  "hallucinated_features": [
-    {
-      "description": "PWA service worker registration and offline caching/manifest installability support.",
-      "reason": "BuildRequest did not ask for PWA/service worker/manifest changes; these appear as additional functionality beyond requested requirements.",
-      "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/public/sw.js",
-        "frontend/public/manifest.webmanifest",
-        "frontend/index.html"
-      ]
-    }
-  ],
-  "confidence": 0.72,
+  "hallucinated_features": [],
+  "confidence": 0.68,
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/capture/VideoCapturePanel.tsx",
     "frontend/src/components/editor/MediaEditorDialog.tsx",
     "frontend/src/components/feed/FeedItem.tsx",
-    "frontend/src/components/feed/InteractionRail.tsx",
-    "frontend/src/components/feed/UploadButton.tsx",
     "frontend/src/components/feed/UploadDialog.tsx",
-    "frontend/src/components/feed/VideoFeed.tsx",
-    "frontend/src/components/search/SearchButton.tsx",
-    "frontend/src/components/search/SearchDialog.tsx",
-    "frontend/src/components/security/PinChallengeDialog.tsx",
-    "frontend/src/components/security/SecurityButton.tsx",
-    "frontend/src/components/security/SecuritySetupDialog.tsx",
-    "frontend/src/hooks/useDeviceTrust.ts",
+    "frontend/src/components/feed/VideoOverlayControls.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/hooks/useSecuritySetup.ts",
-    "frontend/src/utils/downloadMedia.ts",
     "frontend/src/utils/mediaEdits.ts",
     "project_state.json"
   ]

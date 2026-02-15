@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang='en'>
     <head>
         <meta charset='UTF-8' />
@@ -6,7 +7,11 @@
         <meta name='apple-mobile-web-app-capable' content='yes' />
         <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
         <meta name='apple-mobile-web-app-title' content='ZIZO' />
-        <title>ZIZO</title>
+        <meta name='description' content='Share videos and images with the community' />
+        <meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate' />
+        <meta http-equiv='Pragma' content='no-cache' />
+        <meta http-equiv='Expires' content='0' />
+        <title>ZIZO - Share Your Moments</title>
         
         <!-- PWA Manifest -->
         <link rel='manifest' href='/manifest.webmanifest' />
@@ -17,6 +22,14 @@
         <link rel='apple-touch-icon' href='/assets/generated/zizo-app-icon.dim_192x192.png' />
     </head>
     <body>
+        <noscript>
+            <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui; text-align: center; padding: 20px;">
+                <div>
+                    <h1>JavaScript Required</h1>
+                    <p>This application requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+                </div>
+            </div>
+        </noscript>
         <div id='root'></div>
         <script type='module' src='/src/main.tsx'></script>
     </body>

@@ -1,166 +1,130 @@
 {
   "kind": "build_request",
-  "title": "Fix empty feed + upload feedback, add search, in-app capture/editing, security verification, and media download",
+  "title": "Retry build + fix upload caption optional, restore uploaded video audio, prevent freezing, add pause/resume controls",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-13",
-      "text": "Fix the feed sometimes rendering as completely empty by making feed loading resilient and diagnosable: ensure the app always attempts to fetch `fetchFeedItems()` when an actor is available (anonymous or authenticated), and surface actionable error details (without exposing sensitive data) when the fetch fails.",
+      "id": "REQ-33",
+      "text": "Make the upload caption optional (uploader may leave it empty) while keeping the upload flow functional for both images and videos.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "the feet does not shows older post it is completely"
+          "Can you make the caption when uploading videos optional",
+          "For the caption side make it a decision to the uploader"
         ]
       },
       "acceptanceCriteria": [
-        "When the backend returns at least 1 feed item, the feed UI renders it (not the empty-state screen).",
-        "If `fetchFeedItems()` throws, the UI shows the existing error screen and includes a clear retry action (e.g., button) that re-runs the query.",
-        "If the actor is not yet available, the UI shows a loading state rather than a permanent empty-state."
+        "The Upload button is enabled when a media file is selected even if the caption field is empty/whitespace.",
+        "Submitting an upload with an empty caption succeeds and creates a feed item.",
+        "User-facing validation/error text no longer says a caption is required."
       ]
     },
     {
-      "id": "REQ-14",
-      "text": "Improve upload UX so users always receive clear progress + completion feedback and their new post becomes visible immediately after upload succeeds.",
+      "id": "REQ-34",
+      "text": "Update the backend addMedia API behavior to accept empty captions (store empty string) so optional captions do not cause backend errors or traps.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "make the caption when uploading videos optional"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Calling addMedia with caption=\"\" succeeds for authenticated users.",
+        "Feed items returned from fetchFeedItems can contain caption=\"\" without breaking serialization or UI rendering."
+      ]
+    },
+    {
+      "id": "REQ-35",
+      "text": "Fix the media editing pipeline so video edits do not convert the uploaded video into a JPEG/image and do not strip audio; edited videos must remain valid playable video files.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "After uploading I don't see my post,",
-          "The app that not show any success message or spinner finishing"
+          "There is simply no audio track at all",
+          "some videos aren't able to play after uploaded",
+          "For the video that freeze It happened when every video is uploaded"
         ]
       },
       "acceptanceCriteria": [
-        "While uploading, the Upload dialog displays progress feedback (existing progress bar) and a clear busy state (disable inputs/buttons).",
-        "On successful upload, the app shows a visible success confirmation (toast is already used) and the new item appears in the feed without requiring a manual refresh.",
-        "On upload failure, the UI shows an error message and leaves the dialog open so the user can retry."
+        "Using the in-app editor on a video and then uploading results in a feed item that plays as video (not an image) in the feed.",
+        "Uploaded videos retain their original audio track (audio is present when unmuted).",
+        "Uploaded videos play through to the end and can be replayed without freezing part-way."
       ]
     },
     {
-      "id": "REQ-15",
-      "text": "Add keyword search for both videos and images across captions and creator handles, accessible via a Search button in the main top bar.",
+      "id": "REQ-36",
+      "text": "Add an in-feed pause/resume control on the video overlay so users can manually pause and resume the currently active video.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "add a pause and resume button"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a feed item is a video and is active, a visible Pause/Play control is available on the overlay.",
+        "Tapping Pause pauses the active video; tapping Play resumes playback from the current time.",
+        "The control does not appear (or is disabled) for image posts."
+      ]
+    },
+    {
+      "id": "REQ-37",
+      "text": "Ensure uploaded videos can play with sound (not permanently silent): provide a user-facing unmute/mute control for the active video and ensure the video element can output audio when unmuted.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "There is simply no audio track at all"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Active videos start muted by default, but the user can toggle unmute and hear audio for videos that contain audio.",
+        "The mute state change takes effect immediately on the active video element.",
+        "The mute/unmute control is accessible in the in-feed overlay UI."
+      ]
+    },
+    {
+      "id": "REQ-38",
+      "text": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
       "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "add a search button, for the user to search for any video or picture here she wants.",
-          "The search button should search through captions, creator handles and both videos and pictures by keyboard."
+          "Build again now"
         ]
       },
       "acceptanceCriteria": [
-        "A Search button is visible on both mobile and desktop in the main UI header.",
-        "Search supports matching against both `caption` and `handle` and returns both image and video posts.",
-        "Search results are shown in a dedicated UI (modal/screen) and selecting a result navigates the user to that post in the vertical feed.",
-        "Backend exposes a query method to search server-side (so search is not limited to already-loaded client items)."
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "text": "Add in-app capture for live video recording directly inside the app using the device camera, integrated into the existing upload flow.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "It show always record directly inside the app using the device camera."
-        ]
-      },
-      "acceptanceCriteria": [
-        "From the upload entry point, the user can choose to record a video using their camera (in-app) and then proceed to caption + upload.",
-        "Recorded video can be previewed before upload.",
-        "If camera/microphone permission is denied, the UI shows a clear explanation and allows the user to fall back to file upload."
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "text": "Add basic editing tools for images and videos: image cropping, video trimming, text overlays, and simple filters, applied before upload.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "Editing tools search as cropping, trimming videos, add text,filters."
-        ]
-      },
-      "acceptanceCriteria": [
-        "After selecting an image, the user can crop it and apply at least one simple filter before upload.",
-        "After selecting/recording a video, the user can trim the start/end and apply at least one simple filter before upload.",
-        "User can add a text overlay to both images and videos before upload (positioning can be basic).",
-        "Edits are reflected in the media that is uploaded (not just a preview)."
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "text": "Implement a simplified in-app three-step security verification (without email): security questions, device confirmation, and a PIN challenge that is triggered when the system detects suspicious activity.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "Let's ignore the email verification .",
-          "For Three steps verification it should include email code, security questions and device confirmation.",
-          "Requesting for user pin anytime the system feels something suspicious."
-        ]
-      },
-      "acceptanceCriteria": [
-        "The app provides a setup flow for authenticated users to configure: (1) security questions/answers and (2) a PIN.",
-        "The backend stores verification setup per user and can require verification for sensitive actions.",
-        "Device confirmation is implemented as a per-device trust mechanism (a device identifier stored client-side and registered with the backend); new/untrusted devices must be confirmed.",
-        "When suspicious activity is detected, the user is prompted for their PIN and cannot proceed until the PIN is verified.",
-        "Email verification is not present anywhere in the UI or backend logic."
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "text": "Add the ability for users to download media (images/videos) from the feed directly to their device local storage.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "Downloading orders upload and saving it straight to your device"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Each feed item provides a visible Download action.",
-        "Tapping Download saves the currently viewed image/video to the user’s device (using browser download behavior).",
-        "Download works for both image and video items using the existing direct media URLs (`getDirectURL()`)."
+        "Frontend and backend compile successfully with no build-blocking errors.",
+        "The deployed app loads and the upload + playback fixes are available in production."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with all logic in backend/main.mo (no additional backend services).",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui/*.",
-    "No email sending/SMTP/third-party messaging integrations; the verification flow must not rely on email codes.",
-    "User-facing text must be in English."
+    "Backend must remain a single Motoko actor in backend/main.mo; only add a migration (backend/migration.mo) if a stable state upgrade is required.",
+    "Do not edit files under frontend/src/components/ui or other paths listed in frontend.immutablePaths.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Implementing real-time chat, comments, or share functionality beyond existing placeholders.",
-    "Adding third-party authentication providers (only Internet Identity is supported).",
-    "Storing a private in-app gallery of downloaded media on the backend (downloads are to the user’s device only)."
+    "Implementing server-side transcoding or format conversion for uploaded videos.",
+    "Adding third-party media processing services or external storage/database.",
+    "Changing authentication providers (Internet Identity remains the only auth)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

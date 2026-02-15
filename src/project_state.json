@@ -1,18 +1,30 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 9,
-  "summary": "Expand the TikTok-style vertical feed web app (PWA-like) with reliable upload visibility/feedback and feed loading, plus new capabilities: in-feed search across captions/handles for both videos and images, in-app capture/editing tools, stronger in-app security verification (security questions + device confirmation + PIN on suspicious activity), and the ability to download uploaded media to the user’s device.",
+  "projectStateVersion": 21,
+  "summary": "Expand the TikTok-style vertical feed web app (PWA-like) with reliable upload visibility/feedback and feed loading, plus new capabilities: in-app install/download entry point (PWA install button in settings/top bar), account settings for editing profile + credentials (PIN/password) + username/handle, in-feed search across captions/handles for both videos and images, in-app capture/editing tools, stronger in-app security verification (security questions + device confirmation + PIN on suspicious activity), the ability to download uploaded media to the user’s device, and optional Android APK/Play Store packaging via PWA wrapping.",
   "architectural_notes": [
     "Target platform is web (React) rather than Expo/React Native.",
     "Core experience: vertical, full-screen, swipe/scroll paging video feed (TikTok-style).",
     "Backend should be implemented as a canister (for the like API and feed metadata).",
     "Search must query across both captions and creator handles and return mixed media (video+image) results.",
     "Implement in-browser media capture and editing (camera access + client-side crop/trim/text/filters) for upload flow.",
-    "Security flow includes risk-triggered PIN challenge plus security questions and device confirmation; no email-based verification."
+    "Security flow includes risk-triggered PIN challenge plus security questions and device confirmation; no email-based verification.",
+    "Add a visible in-app PWA install entry point: an “Install/Download App” button inside the Settings menu in the top bar.",
+    "Add user account settings UI/flow to update profile fields plus credential changes (PIN/password) and identifiers (username/handle).",
+    "APK/Play Store distribution can be achieved by wrapping the PWA (e.g., Bubblewrap/PWABuilder); requires store listing assets (icons/screenshots) and stable public app URL.",
+    "APK/PWA wrappers will only work if the deployed public app URL loads correctly in a normal browser; resolve any canister routing/asset serving issues before generating an APK."
   ],
   "known_issues": [
     "Uploads provide no success/progress feedback and uploaded posts are not visible after uploading.",
-    "Feed can appear completely empty (no older posts displayed), indicating a feed loading/fetch/rendering failure."
+    "Feed can appear completely empty (no older posts displayed), indicating a feed loading/fetch/rendering failure.",
+    "Build/implementation attempt failed (\"AI couldn't implement that\"), blocking generation of a public app link/APK until a successful build completes.",
+    "Deployed public app URL (icp0) fails to load (blank / \"Canister ID Not Resolved\"), causing APK wrappers to show only the link/ads instead of the app/login.",
+    "Frontend production HTML is referencing /src/main.tsx (source entry) instead of the built Vite bundle, preventing the app from loading on the icp0 URL.",
+    "Testing https://vg527-maaaa-aaaak-afpsq-cai.icp0.io/ in an incognito window still shows “Canister ID not resolved” (even after Draft Version 7 deploy).",
+    "Accessing the deployed icp0 URL returns: \"The gateway couldn't determine the destination canister for this request. Ensure the request includes a valid canister ID or uses a recognized domain\" (frontend canister routing/asset serving still failing).",
+    "Caption is currently required on upload; it should be optional.",
+    "Uploaded videos have no audio track after upload even though originals contain audio.",
+    "All uploaded videos freeze part-way through playback and won’t replay/continue."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -143,6 +155,142 @@
         "REQ-19"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-identify-and-fix-any-build-blocking-issues-so-the-project-compiles-deploys-and-serves-the-web-app-successfully-frontend-backend",
+      "title": "Identify and fix any build-blocking issues so the project compiles, deploys, and serves the web app successfully (frontend + backend).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-a-successful-build-ensure-the-deployed-app-provides-an-accessible-public-app-url-that-can-be-shared-with-users-so-it-can-later-be-wrapped-into-an-apk-if-desired",
+      "title": "After a successful build, ensure the deployed app provides an accessible public app URL that can be shared with users (so it can later be wrapped into an APK if desired).",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-rebuild-and-redeploy-the-full-application-frontend-backend-so-the-deployed-icp0-url-serves-the-react-app-correctly-html-bundled-js-css-and-does-not-show-a-blank-page-a-raw-link-page-or-canister-id-not-resolved",
+      "title": "Rebuild and redeploy the full application (frontend + backend) so the deployed icp0 URL serves the React app correctly (HTML + bundled JS/CSS) and does not show a blank page, a raw link page, or “Canister ID Not Resolved”.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-any-build-deploy-configuration-issues-that-could-cause-the-production-deployment-to-reference-source-only-entrypoints-or-missing-static-assets-e-g-ensure-the-production-build-serves-bundled-assets-rather-than-relying-on-src-paths",
+      "title": "Fix any build/deploy configuration issues that could cause the production deployment to reference source-only entrypoints or missing static assets (e.g., ensure the production build serves bundled assets rather than relying on /src/* paths).",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-pwa-service-worker-caching-logic-to-avoid-serving-stale-incorrect-app-shells-or-interfering-with-canister-traffic-on-icp0-domains-ensure-users-get-the-latest-build-after-redeploy",
+      "title": "Update the PWA service worker caching logic to avoid serving stale/incorrect app shells or interfering with canister traffic on icp0 domains; ensure users get the latest build after redeploy.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-successful-rebuild-redeploy-provide-the-new-working-public-app-url-icp0-that-can-be-used-for-pwa-to-apk-wrapping",
+      "title": "After the successful rebuild/redeploy, provide the new working public app URL (icp0) that can be used for PWA-to-APK wrapping.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-production-frontend-entry-so-the-deployed-icp-frontend-canister-serves-the-compiled-vite-output-bundled-js-css-from-dist-assets-instead-of-referencing-the-source-entry-src-main-tsx-in-production",
+      "title": "Fix the production frontend entry so the deployed ICP frontend canister serves the compiled Vite output (bundled JS/CSS from `dist/assets/*`) instead of referencing the source entry `/src/main.tsx` in production.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-build-deploy-configuration-so-the-frontend-canister-uploads-serves-the-vite-build-output-directory-e-g-frontend-dist-as-static-assets-during-dfx-deploy-ensuring-the-runtime-files-match-what-npm-run-build-produces",
+      "title": "Update the frontend build/deploy configuration so the frontend canister uploads/serves the Vite build output directory (e.g., `frontend/dist`) as static assets during `dfx deploy`, ensuring the runtime files match what `npm run build` produces.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-production-frontend-entrypoint-so-the-deployed-frontend-canister-serves-the-built-vite-app-shell-dist-index-html-dist-assets-instead-of-referencing-the-source-module-entry-src-main-tsx-which-currently-causes-the-icp0-url-to-show-canister-id-not-resolved",
+      "title": "Fix the production frontend entrypoint so the deployed frontend canister serves the built Vite app shell (dist/index.html + dist/assets/*) instead of referencing the source module entry `/src/main.tsx`, which currently causes the icp0 URL to show “Canister ID Not Resolved”.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-frontend-deploy-configuration-publishes-the-vite-build-output-directory-frontend-dist-as-the-frontend-canister-s-static-asset-source-so-production-never-serves-source-only-paths-like-src",
+      "title": "Ensure the frontend deploy configuration publishes the Vite build output directory (`frontend/dist/`) as the frontend canister’s static asset source so production never serves source-only paths like `/src/*`.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-production-frontend-deployment-configuration-so-the-frontend-canister-serves-the-vite-build-output-directory-frontend-dist-as-static-assets-rather-than-serving-source-only-paths-e-g-src-this-must-ensure-the-icp0-gateway-can-resolve-the-canister-and-load-the-app-from",
+      "title": "Update the production frontend deployment configuration so the frontend canister serves the Vite build output directory (`frontend/dist/`) as static assets, rather than serving source-only paths (e.g., `/src/*`). This must ensure the icp0 gateway can resolve the canister and load the app from `/`.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-production-app-shell-is-built-correctly-the-deployed-dist-index-html-must-reference-bundled-assets-under-assets-and-must-not-reference-the-development-entrypoint-src-main-tsx-align-the-build-deploy-flow-with-the-guidance-in-frontend-deployment-md-and-the-template-in-frontend-deploy-dfx-frontend-canister-assets-template-json",
+      "title": "Ensure the production app shell is built correctly: the deployed `dist/index.html` must reference bundled assets under `/assets/*` and must not reference the development entrypoint `/src/main.tsx`. Align the build/deploy flow with the guidance in `frontend/DEPLOYMENT.md` and the template in `frontend/deploy/dfx-frontend-canister-assets.template.json`.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-or-update-deployment-time-verification-so-a-deploy-fails-fast-if-frontend-dist-is-missing-or-if-dist-index-html-still-references-src-main-tsx-using-the-existing-frontend-scripts-verify-dist-shell-ts-checks-as-the-gate-before-deploying-the-frontend-canister",
+      "title": "Add or update deployment-time verification so a deploy fails fast if `frontend/dist/` is missing or if `dist/index.html` still references `/src/main.tsx`, using the existing `frontend/scripts/verify-dist-shell.ts` checks as the gate before deploying the frontend canister.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-upload-caption-optional-uploader-may-leave-it-empty-while-keeping-the-upload-flow-functional-for-both-images-and-videos",
+      "title": "Make the upload caption optional (uploader may leave it empty) while keeping the upload flow functional for both images and videos.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-media-editing-pipeline-so-video-edits-do-not-convert-the-uploaded-video-into-a-jpeg-image-and-do-not-strip-audio-edited-videos-must-remain-valid-playable-video-files",
+      "title": "Fix the media editing pipeline so video edits do not convert the uploaded video into a JPEG/image and do not strip audio; edited videos must remain valid playable video files.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-in-feed-pause-resume-control-on-the-video-overlay-so-users-can-manually-pause-and-resume-the-currently-active-video",
+      "title": "Add an in-feed pause/resume control on the video overlay so users can manually pause and resume the currently active video.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-uploaded-videos-can-play-with-sound-not-permanently-silent-provide-a-user-facing-unmute-mute-control-for-the-active-video-and-ensure-the-video-element-can-output-audio-when-unmuted",
+      "title": "Ensure uploaded videos can play with sound (not permanently silent): provide a user-facing unmute/mute control for the active video and ensure the video element can output audio when unmuted.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -216,6 +364,64 @@
       "id": "AR-14",
       "summary": "Allow users to download media (images/videos) from the app directly to their device local storage.",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add a clear “Download/Install App” PWA install button placed in the top bar inside the Settings menu panel.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add account management in Settings: allow users to edit their profile anytime, change PIN/password, change username, and change handle.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Support distributing the PWA as an Android APK / Play Store-ready package (via PWA wrapping such as Bubblewrap/PWABuilder) and define required store assets/steps.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Make the caption field optional during upload (uploader can leave it empty).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Fix uploaded videos losing audio tracks after upload (original files have sound, but playback has no audio).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Fix uploaded videos freezing part-way through playback (happens for every uploaded video).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Add pause/resume controls (buttons) on the in-feed video player overlay.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Update the backend addMedia API behavior to accept empty captions (store empty string) so optional captions do not cause backend errors or traps.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
+      "reqIds": [
+        "REQ-38"
+      ],
       "status": "pending"
     }
   ],

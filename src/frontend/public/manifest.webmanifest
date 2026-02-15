@@ -3,6 +3,7 @@
   "short_name": "ZIZO",
   "description": "Share videos and images with the community",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1a0a1f",
   "theme_color": "#1a0a1f",

@@ -58,15 +58,15 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
   };
 
   const handleUpload = async () => {
-    if (!file || !caption.trim()) {
-      setUploadError('Please select a file and enter a caption');
+    if (!file) {
+      setUploadError('Please select a file');
       return;
     }
 
     try {
       setUploadProgress(0);
       setUploadError(null);
-      await uploadMutation.mutateAsync({ file, caption, onProgress: setUploadProgress });
+      await uploadMutation.mutateAsync({ file, caption: caption.trim(), onProgress: setUploadProgress });
       
       setFile(null);
       setCaption('');
@@ -206,7 +206,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         </Tabs>
 
         <div className="space-y-2">
-          <Label htmlFor="caption">Caption</Label>
+          <Label htmlFor="caption">Caption (optional)</Label>
           <Textarea
             id="caption"
             placeholder="Write a caption..."
@@ -249,7 +249,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
           <Button
             type="button"
             onClick={handleUpload}
-            disabled={!file || !caption.trim() || isUploading}
+            disabled={!file || isUploading}
           >
             {isUploading ? (
               <>

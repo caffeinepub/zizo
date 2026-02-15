@@ -1,153 +1,106 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T16:46:23.436Z",
+  "generatedAt": "2026-02-15T19:58:02.323Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 7,
-    "implemented": 7,
+    "total": 6,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-13",
-        "summary": "Fix the feed sometimes rendering as completely empty by making feed loading resilient and diagnosable: ensure the app always attempts to fetch `fetchFeedItems()` when an actor is available (anonymous or authenticated), and surface actionable error details (without exposing sensitive data) when the fetch fails.",
+        "id": "REQ-33",
+        "summary": "Make the upload caption optional (uploader may leave it empty) while keeping the upload flow functional for both images and videos.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/feed/VideoFeed.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/feed/VideoFeed.tsx"
-        ]
-      },
-      {
-        "id": "REQ-14",
-        "summary": "Improve upload UX so users always receive clear progress + completion feedback and their new post becomes visible immediately after upload succeeds.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/feed/UploadDialog.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/feed/UploadDialog.tsx"
-        ]
-      },
-      {
-        "id": "REQ-15",
-        "summary": "Add keyword search for both videos and images across captions and creator handles, accessible via a Search button in the main top bar.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/search/SearchButton.tsx",
-          "frontend/src/components/search/SearchDialog.tsx",
-          "frontend/src/hooks/useSearch.ts",
-          "frontend/src/components/feed/VideoFeed.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/search/SearchButton.tsx",
-          "frontend/src/components/search/SearchDialog.tsx",
-          "frontend/src/components/feed/VideoFeed.tsx",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-16",
-        "summary": "Add in-app capture for live video recording directly inside the app using the device camera, integrated into the existing upload flow.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/capture/VideoCapturePanel.tsx",
-          "frontend/src/components/feed/UploadDialog.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/capture/VideoCapturePanel.tsx",
-          "frontend/src/components/feed/UploadDialog.tsx"
-        ]
-      },
-      {
-        "id": "REQ-17",
-        "summary": "Add basic editing tools for images and videos: image cropping, video trimming, text overlays, and simple filters, applied before upload.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/editor/MediaEditorDialog.tsx",
-          "frontend/src/utils/mediaEdits.ts",
-          "frontend/src/components/feed/UploadDialog.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/editor/MediaEditorDialog.tsx",
-          "frontend/src/utils/mediaEdits.ts",
-          "frontend/src/components/feed/UploadDialog.tsx"
-        ]
-      },
-      {
-        "id": "REQ-18",
-        "summary": "Implement a simplified in-app three-step security verification (without email): security questions, device confirmation, and a PIN challenge that is triggered when the system detects suspicious activity.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useDeviceTrust.ts",
-          "frontend/src/components/security/SecuritySetupDialog.tsx",
-          "frontend/src/components/security/PinChallengeDialog.tsx",
-          "frontend/src/hooks/useVerificationGate.ts",
-          "frontend/src/App.tsx",
+          "frontend/src/components/feed/UploadDialog.tsx",
           "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useDeviceTrust.ts",
-          "frontend/src/components/security/SecuritySetupDialog.tsx",
-          "frontend/src/components/security/PinChallengeDialog.tsx",
-          "frontend/src/App.tsx",
+          "frontend/src/components/feed/UploadDialog.tsx",
           "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
-        "id": "REQ-19",
-        "summary": "Add the ability for users to download media (images/videos) from the feed directly to their device local storage.",
+        "id": "REQ-34",
+        "summary": "Update the backend addMedia API behavior to accept empty captions (store empty string) so optional captions do not cause backend errors or traps.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-35",
+        "summary": "Fix the media editing pipeline so video edits do not convert the uploaded video into a JPEG/image and do not strip audio; edited videos must remain valid playable video files.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/downloadMedia.ts",
-          "frontend/src/components/feed/InteractionRail.tsx",
+          "frontend/src/utils/mediaEdits.ts",
+          "frontend/src/components/editor/MediaEditorDialog.tsx",
+          "frontend/src/components/feed/UploadDialog.tsx",
           "frontend/src/components/feed/FeedItem.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/downloadMedia.ts",
-          "frontend/src/components/feed/InteractionRail.tsx",
+          "frontend/src/utils/mediaEdits.ts",
+          "frontend/src/components/editor/MediaEditorDialog.tsx",
+          "frontend/src/components/feed/UploadDialog.tsx",
           "frontend/src/components/feed/FeedItem.tsx"
         ]
+      },
+      {
+        "id": "REQ-36",
+        "summary": "Add an in-feed pause/resume control on the video overlay so users can manually pause and resume the currently active video.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "frontend/src/components/feed/FeedItem.tsx",
+          "frontend/src/components/feed/FeedOverlay.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "frontend/src/components/feed/FeedItem.tsx"
+        ]
+      },
+      {
+        "id": "REQ-37",
+        "summary": "Ensure uploaded videos can play with sound (not permanently silent): provide a user-facing unmute/mute control for the active video and ensure the video element can output audio when unmuted.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "frontend/src/components/feed/FeedItem.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "frontend/src/components/feed/FeedItem.tsx"
+        ]
+      },
+      {
+        "id": "REQ-38",
+        "summary": "Re-run the full build and deployment so the updated frontend and backend are compiled and the deployed app reflects the fixes.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/DEPLOYMENT.md",
+          "frontend/scripts/deploy-frontend-prod.sh"
+        ],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/camera/useCamera.ts",
-    "frontend/src/components/capture/VideoCapturePanel.tsx",
     "frontend/src/components/editor/MediaEditorDialog.tsx",
     "frontend/src/components/feed/FeedItem.tsx",
-    "frontend/src/components/feed/InteractionRail.tsx",
-    "frontend/src/components/feed/UploadButton.tsx",
     "frontend/src/components/feed/UploadDialog.tsx",
-    "frontend/src/components/feed/VideoFeed.tsx",
-    "frontend/src/components/search/SearchButton.tsx",
-    "frontend/src/components/search/SearchDialog.tsx",
-    "frontend/src/components/security/PinChallengeDialog.tsx",
-    "frontend/src/components/security/SecurityButton.tsx",
-    "frontend/src/components/security/SecuritySetupDialog.tsx",
+    "frontend/src/components/feed/VideoOverlayControls.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useDeviceTrust.ts",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/hooks/useSecuritySetup.ts",
-    "frontend/src/utils/downloadMedia.ts",
     "frontend/src/utils/mediaEdits.ts",
     "project_state.json",
     "scratch/component-selection.json",

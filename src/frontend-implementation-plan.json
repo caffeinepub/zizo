@@ -1,201 +1,124 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Feed resiliency, upload feedback, search, capture/editing, verification UX, and media download (frontend-only)",
+  "title": "Optional captions, reliable video upload/editing, and in-feed playback controls",
   "requirements": [
     {
-      "id": "REQ-13",
-      "summary": "Make feed loading resilient when actor is pending, and make failures diagnosable with safe error details and retry.",
+      "id": "REQ-33",
+      "summary": "Allow uploads with an empty/whitespace caption while keeping image/video upload flow functional.",
       "acceptanceCriteria": [
-        "When the backend returns at least 1 feed item, the feed UI renders it (not the empty-state screen).",
-        "If `fetchFeedItems()` throws, the UI shows the existing error screen and includes a clear retry action (e.g., button) that re-runs the query.",
-        "If the actor is not yet available, the UI shows a loading state rather than a permanent empty-state."
+        "The Upload button is enabled when a media file is selected even if the caption field is empty/whitespace.",
+        "Submitting an upload with an empty caption succeeds and creates a feed item.",
+        "User-facing validation/error text no longer says a caption is required."
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Update `useFeedItems()` to (1) always attempt `actor.fetchFeedItems()` when an actor becomes available (including anonymous), (2) expose a combined loading state that includes actor creation time, and (3) return a sanitized, user-safe error object/message suitable for display while keeping technical details only in console logs."
-        },
-        {
-          "path": "frontend/src/components/feed/VideoFeed.tsx",
-          "operation": "modify",
-          "description": "Adjust feed rendering logic to differentiate between (a) actor/initial load pending (show loading), (b) real empty feed (show empty-state), and (c) fetch error (show error UI). Add a visible Retry button that calls the React Query `refetch()` for the feed query and display safe, actionable error detail (e.g., ‘Network issue’, ‘Temporarily unavailable’) without leaking sensitive data."
-        }
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "summary": "Improve upload dialog UX with clear busy/progress states, success confirmation, and immediate feed visibility after successful upload.",
-      "acceptanceCriteria": [
-        "While uploading, the Upload dialog displays progress feedback (existing progress bar) and a clear busy state (disable inputs/buttons).",
-        "On successful upload, the app shows a visible success confirmation (toast is already used) and the new item appears in the feed without requiring a manual refresh.",
-        "On upload failure, the UI shows an error message and leaves the dialog open so the user can retry."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Enhance `useUploadMedia()` to update the `feedItems` cache immediately on success (optimistically prepend/insert the returned `FeedItem`) in addition to invalidating, so the new post becomes visible right away. Also ensure error states are propagated in a structured way so the dialog can show an inline error message."
-        },
         {
           "path": "frontend/src/components/feed/UploadDialog.tsx",
           "operation": "modify",
-          "description": "Improve busy/completion feedback: keep inputs/buttons disabled during upload, keep progress UI visible through completion (including a clear ‘Processing…’/finalizing state if needed), show an inline error message on failure (while keeping the dialog open), and only auto-close/reset on successful completion (toast already used)."
+          "description": "Remove caption-required validation and UI disabling logic so uploads proceed when a file is selected even if caption is empty/whitespace; update any user-facing error text to no longer require a caption. (Verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Normalize caption before calling the backend capability (e.g., trim and pass empty string when blank) so the frontend consistently supports optional captions without blocking uploads. (Verify the component's usage instructions before implementing.)"
         }
       ]
     },
     {
-      "id": "REQ-15",
-      "summary": "Add server-side keyword search (captions + handles across image/video) via a header Search button and results UI that can jump to a post in the vertical feed.",
+      "id": "REQ-35",
+      "summary": "Fix the frontend media editing pipeline so video edits remain videos, retain audio, and avoid playback-freezing regressions.",
       "acceptanceCriteria": [
-        "A Search button is visible on both mobile and desktop in the main UI header.",
-        "Search supports matching against both `caption` and `handle` and returns both image and video posts.",
-        "Search results are shown in a dedicated UI (modal/screen) and selecting a result navigates the user to that post in the vertical feed.",
-        "Backend exposes a query method to search server-side (so search is not limited to already-loaded client items)."
+        "Using the in-app editor on a video and then uploading results in a feed item that plays as video (not an image) in the feed.",
+        "Uploaded videos retain their original audio track (audio is present when unmuted).",
+        "Uploaded videos play through to the end and can be replayed without freezing part-way."
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/components/search/SearchButton.tsx",
-          "operation": "create",
-          "description": "Create a header-level Search trigger button (icon + label as appropriate) designed for both mobile and desktop. Use existing UI primitives (e.g., shadcn dialog/button) to keep styling consistent. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/search/SearchDialog.tsx",
-          "operation": "create",
-          "description": "Create a dedicated Search modal/dialog UI with an input, loading state, empty/no-results state, and a results list. Results should be based on calling the backend’s `searchByKeyword(searchText)` (server-side search), and selecting a result should request navigation/jump-to-post in the feed. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useSearch.ts",
-          "operation": "create",
-          "description": "Add a React Query hook for search that calls `actor.searchByKeyword(searchText)` with debouncing and cancellation-friendly behavior, and returns normalized UI states (loading/error/results). Keep error messaging safe for display and log technical details to console."
-        },
-        {
-          "path": "frontend/src/components/feed/VideoFeed.tsx",
-          "operation": "modify",
-          "description": "Add support for ‘jump to post’ by FeedItem id: maintain refs or DOM lookup for rendered items and implement a `scrollToItemId(id)` behavior (e.g., `scrollIntoView` within the feed container). Also ensure the active index updates appropriately after a programmatic jump."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire the Search button into the main top bar (alongside Upload/Login), manage dialog open state, and pass a callback to the search UI that triggers the feed ‘jump to post’ behavior."
-        }
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "summary": "Add in-app live video capture using device camera and integrate it into the existing upload flow with preview and permission fallback.",
-      "acceptanceCriteria": [
-        "From the upload entry point, the user can choose to record a video using their camera (in-app) and then proceed to caption + upload.",
-        "Recorded video can be previewed before upload.",
-        "If camera/microphone permission is denied, the UI shows a clear explanation and allows the user to fall back to file upload."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/capture/VideoCapturePanel.tsx",
-          "operation": "create",
-          "description": "Create an in-app video recording panel using the browser MediaDevices + MediaRecorder APIs with a stable, visible preview area and clear controls (start/stop/retake/use video). Integrate robust permission/error messaging. Where helpful for preview/error handling, use the selected `camera` hook (`useCamera`) for camera support patterns. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/feed/UploadDialog.tsx",
-          "operation": "modify",
-          "description": "Integrate capture into upload flow: add a choice between file upload and in-app record, open the capture panel inside the dialog, and on completion set the recorded video as the selected file for the existing caption+upload step. Ensure permission denied path clearly explains the issue and offers a one-click fallback to file upload."
-        }
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "summary": "Add basic pre-upload editing: image crop + filter + text overlay, and video trim + filter + text overlay, applied to the uploaded media.",
-      "acceptanceCriteria": [
-        "After selecting an image, the user can crop it and apply at least one simple filter before upload.",
-        "After selecting/recording a video, the user can trim the start/end and apply at least one simple filter before upload.",
-        "User can add a text overlay to both images and videos before upload (positioning can be basic).",
-        "Edits are reflected in the media that is uploaded (not just a preview)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/editor/MediaEditorDialog.tsx",
-          "operation": "create",
-          "description": "Create a lightweight media editor dialog that supports: (1) image crop UI + at least one filter option + basic text overlay positioning; (2) video trim controls (start/end) + at least one filter option + basic text overlay positioning. Provide preview and ‘Apply’ that outputs an edited File/Blob for upload. Verify the component's usage instructions before implementing."
-        },
         {
           "path": "frontend/src/utils/mediaEdits.ts",
-          "operation": "create",
-          "description": "Implement client-side edit application helpers: for images, render to canvas applying crop/filter/text and export as a new Blob/File; for videos, implement a pragmatic trim+overlay+filter pipeline (e.g., rendering frames to canvas and recording the selected range) that outputs a new Blob/File to ensure edits affect the uploaded media, not just preview."
+          "operation": "modify",
+          "description": "Correct applyVideoEdits to never output an image/jpeg file; ensure it returns a valid video File (typically the original input video file when true non-destructive video editing is not supported) to prevent stripping audio or corrupting playback. (Verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/components/editor/MediaEditorDialog.tsx",
+          "operation": "modify",
+          "description": "Adjust the video editing UX so applying edits does not convert videos to images: ensure the Apply action for videos returns the original video File (or only enables edits that can preserve video+audio), and update user-facing messaging in English to set correct expectations. (Verify the component's usage instructions before implementing.)"
         },
         {
           "path": "frontend/src/components/feed/UploadDialog.tsx",
           "operation": "modify",
-          "description": "Wire the editor into the upload flow for both selected files and recorded videos: add an ‘Edit’ step/button, store edit state/output file, update preview to reflect edits, and ensure the actual file passed to `useUploadMedia()` is the edited result."
-        }
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "summary": "Add UI for a simplified three-step security verification setup and challenge flow (no email), including device trust and PIN prompts when required.",
-      "acceptanceCriteria": [
-        "The app provides a setup flow for authenticated users to configure: (1) security questions/answers and (2) a PIN.",
-        "The backend stores verification setup per user and can require verification for sensitive actions.",
-        "Device confirmation is implemented as a per-device trust mechanism (a device identifier stored client-side and registered with the backend); new/untrusted devices must be confirmed.",
-        "When suspicious activity is detected, the user is prompted for their PIN and cannot proceed until the PIN is verified.",
-        "Email verification is not present anywhere in the UI or backend logic."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useDeviceTrust.ts",
-          "operation": "create",
-          "description": "Implement a per-device identifier utility/hook stored client-side (e.g., localStorage) to represent the current device for ‘device confirmation’ UX. Expose helpers to read/generate/clear the device id and to surface whether the device is ‘known’ per locally cached state."
-        },
-        {
-          "path": "frontend/src/components/security/SecuritySetupDialog.tsx",
-          "operation": "create",
-          "description": "Create a security verification setup modal for authenticated users to configure security questions/answers and a PIN (no email anywhere). Include clear English copy and validation. This is UI-only wiring in this frontend-only plan; it should be designed to call backend capabilities once available. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/security/PinChallengeDialog.tsx",
-          "operation": "create",
-          "description": "Create a PIN challenge modal that blocks continuation until the user successfully verifies their PIN (UI state machine + error messaging). The dialog should support being triggered by ‘suspicious activity’ signals surfaced from failed actions. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useVerificationGate.ts",
-          "operation": "create",
-          "description": "Add a small verification-gating helper that can wrap sensitive mutations (e.g., upload/like if desired) and, on specific backend error signals indicating verification required, opens the PIN challenge dialog and retries the pending action after success. Keep messaging in English and ensure no email-based UI paths exist."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire security verification UI into the app shell: add a Security entry point in the header (e.g., button/menu item) for authenticated users to open setup; mount a single shared PIN challenge modal that can be triggered by verification gating logic. Ensure no email verification UI is introduced."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Integrate optional verification gating for sensitive mutations (at minimum upload) by routing certain backend failure messages through the verification gate to prompt for PIN and allow retry, without adding any email-based flows."
-        }
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "summary": "Add a Download action per feed item to save the current image/video to the user’s device using direct media URLs.",
-      "acceptanceCriteria": [
-        "Each feed item provides a visible Download action.",
-        "Tapping Download saves the currently viewed image/video to the user’s device (using browser download behavior).",
-        "Download works for both image and video items using the existing direct media URLs (`getDirectURL()`)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/downloadMedia.ts",
-          "operation": "create",
-          "description": "Add a small utility to trigger browser downloads for a given direct URL, choosing a reasonable filename and handling common browser constraints (e.g., programmatic anchor click)."
-        },
-        {
-          "path": "frontend/src/components/feed/InteractionRail.tsx",
-          "operation": "modify",
-          "description": "Add a visible Download action/button in the existing interaction rail for the currently viewed feed item, wired to `getDirectURL()` and the new download utility. Verify the component's usage instructions before implementing."
+          "description": "Ensure the upload flow uses the edited file returned by the editor without changing MIME type semantics; keep video files as video/* after editing and before upload. (Verify the component's usage instructions before implementing.)"
         },
         {
           "path": "frontend/src/components/feed/FeedItem.tsx",
           "operation": "modify",
-          "description": "Pass the computed direct media URL and item metadata (e.g., id/type) down to the interaction rail (or overlay) so the Download action can download the currently viewed image/video reliably."
+          "description": "Harden in-feed video playback to reduce freezing risk: manage play/pause lifecycle more carefully for active/inactive transitions, handle ended/replay state, and ensure the rendered element remains a <video> for video media. (Verify the component's usage instructions before implementing.)"
+        }
+      ]
+    },
+    {
+      "id": "REQ-36",
+      "summary": "Add an in-feed pause/resume control for the active video item.",
+      "acceptanceCriteria": [
+        "When a feed item is a video and is active, a visible Pause/Play control is available on the overlay.",
+        "Tapping Pause pauses the active video; tapping Play resumes playback from the current time.",
+        "The control does not appear (or is disabled) for image posts."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "operation": "create",
+          "description": "Create an overlay control component that provides Play/Pause UI for the active video item and calls through to a provided video element ref/controller. (Verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/components/feed/FeedItem.tsx",
+          "operation": "modify",
+          "description": "Wire the new VideoOverlayControls into the active video overlay (only when isActive && isVideo), and implement the pause/resume behavior by controlling the underlying video element. (Verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/components/feed/FeedOverlay.tsx",
+          "operation": "modify",
+          "description": "Ensure overlay layout supports additional active-video controls (Play/Pause) without interfering with existing caption/handle display, and keep controls hidden/disabled for images. (Verify the component's usage instructions before implementing.)"
+        }
+      ]
+    },
+    {
+      "id": "REQ-37",
+      "summary": "Add mute/unmute control for active videos and ensure audio plays when unmuted.",
+      "acceptanceCriteria": [
+        "Active videos start muted by default, but the user can toggle unmute and hear audio for videos that contain audio.",
+        "The mute state change takes effect immediately on the active video element.",
+        "The mute/unmute control is accessible in the in-feed overlay UI."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/feed/VideoOverlayControls.tsx",
+          "operation": "modify",
+          "description": "Extend the overlay controls to include a Mute/Unmute toggle for active videos (default muted), and expose callbacks/state needed to control the video element muted property immediately. (Verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/components/feed/FeedItem.tsx",
+          "operation": "modify",
+          "description": "Implement per-item muted state (default true) for videos and bind it to the <video> element (muted attribute/property) so unmuting outputs audio immediately; pass state/handlers to VideoOverlayControls. (Verify the component's usage instructions before implementing.)"
+        }
+      ]
+    },
+    {
+      "id": "REQ-38",
+      "summary": "Ensure the frontend build/deployment flow reflects the fixes and can be re-run successfully.",
+      "acceptanceCriteria": [
+        "Frontend and backend compile successfully with no build-blocking errors.",
+        "The deployed app loads and the upload + playback fixes are available in production."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/DEPLOYMENT.md",
+          "operation": "modify",
+          "description": "Update deployment documentation to explicitly call out the required rebuild/redeploy steps after making upload/playback fixes (including cache/service-worker considerations) in English. (Verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/scripts/deploy-frontend-prod.sh",
+          "operation": "modify",
+          "description": "Add/adjust script messaging and/or verification steps as needed to ensure a clean production rebuild and redeploy of the updated frontend assets (dist output). (Verify the component's usage instructions before implementing.)"
         }
       ]
     }

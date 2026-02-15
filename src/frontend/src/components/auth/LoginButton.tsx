@@ -12,6 +12,7 @@ export function LoginButton() {
 
   const handleAuth = async () => {
     if (isAuthenticated) {
+      // Clear all cached data on logout
       await clear();
       queryClient.clear();
     } else {
@@ -19,6 +20,7 @@ export function LoginButton() {
         await login();
       } catch (error: any) {
         console.error('Login error:', error);
+        // Handle edge case where user is already authenticated
         if (error.message === 'User is already authenticated') {
           await clear();
           setTimeout(() => login(), 300);

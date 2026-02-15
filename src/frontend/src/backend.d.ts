@@ -37,7 +37,7 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addMedia(_media: MediaType, caption: string): Promise<FeedItem>;
+    addMedia(_media: MediaType, caption: string | null): Promise<FeedItem>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     fetchFeedItems(): Promise<Array<FeedItem>>;
     getCallerUserProfile(): Promise<UserProfile | null>;

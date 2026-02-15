@@ -59,7 +59,8 @@ export function useUploadMedia() {
         ? { __kind__: 'image', image: blob }
         : { __kind__: 'video', video: blob };
 
-      return actor.addMedia(mediaType, caption);
+      const normalizedCaption = caption.trim() || '';
+      return actor.addMedia(mediaType, normalizedCaption || null);
     },
     onSuccess: (newItem) => {
       // Optimistically add to cache

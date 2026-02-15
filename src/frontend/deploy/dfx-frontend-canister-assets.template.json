@@ -1,0 +1,83 @@
+{
+  "comment": "Frontend canister asset source configuration template",
+  "instructions": [
+    "This template shows the correct configuration for the frontend canister",
+    "to serve the Vite build output (dist/) instead of source files.",
+    "",
+    "CRITICAL CONFIGURATION:",
+    "",
+    "In dfx.json, ensure the frontend canister configuration includes:",
+    "",
+    "\"frontend\": {",
+    "  \"type\": \"assets\",",
+    "  \"source\": [\"frontend/dist\"],",
+    "  \"dependencies\": [\"backend\"]",
+    "}",
+    "",
+    "IMPORTANT:",
+    "- type: Must be \"assets\" (not \"custom\" or other)",
+    "- source: Must point to \"frontend/dist\" (NOT \"frontend/src\")",
+    "- dependencies: Should include \"backend\" for proper initialization",
+    "",
+    "VERIFICATION:",
+    "Before deploying, run the verification script:",
+    "  cd frontend",
+    "  node scripts/verify-frontend-canister-assets-config.ts",
+    "",
+    "This script will fail if the configuration is incorrect,",
+    "preventing broken deployments to icp0.io.",
+    "",
+    "DEPLOYMENT WORKFLOW:",
+    "Use the automated deployment script (recommended):",
+    "  cd frontend",
+    "  ./scripts/deploy-frontend-prod.sh",
+    "",
+    "Or manually:",
+    "1. npm run build (in frontend/)",
+    "2. node scripts/verify-dist-shell.ts",
+    "3. node scripts/verify-frontend-canister-assets-config.ts",
+    "4. dfx deploy frontend (from project root)",
+    "",
+    "POST-DEPLOY VERIFICATION:",
+    "After deployment, verify in browser (incognito/private window):",
+    "- Page loads without 'Canister ID not resolved' error",
+    "- Network tab shows requests to /assets/index-[hash].js (not /src/main.tsx)",
+    "- All static assets return HTTP 200",
+    "- Console shows no module loading errors"
+  ],
+  "example_dfx_json_snippet": {
+    "canisters": {
+      "frontend": {
+        "type": "assets",
+        "source": ["frontend/dist"],
+        "dependencies": ["backend"]
+      },
+      "backend": {
+        "type": "motoko",
+        "main": "backend/main.mo"
+      }
+    }
+  },
+  "common_mistakes": [
+    {
+      "mistake": "\"source\": [\"frontend/src\"]",
+      "problem": "Deploys source files instead of production build",
+      "fix": "Change to \"source\": [\"frontend/dist\"]"
+    },
+    {
+      "mistake": "\"type\": \"custom\"",
+      "problem": "Frontend canister won't serve static assets correctly",
+      "fix": "Change to \"type\": \"assets\""
+    },
+    {
+      "mistake": "Missing \"dependencies\": [\"backend\"]",
+      "problem": "Frontend may deploy before backend is ready",
+      "fix": "Add \"dependencies\": [\"backend\"]"
+    },
+    {
+      "mistake": "Deploying without running npm run build",
+      "problem": "dist/ directory is missing or outdated",
+      "fix": "Always run npm run build before deploying"
+    }
+  ]
+}

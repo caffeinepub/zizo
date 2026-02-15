@@ -52,7 +52,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addMedia' : ActorMethod<[MediaType, string], FeedItem>,
+  'addMedia' : ActorMethod<[MediaType, [] | [string]], FeedItem>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'fetchFeedItems' : ActorMethod<[], Array<FeedItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,

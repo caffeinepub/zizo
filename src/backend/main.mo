@@ -1,15 +1,14 @@
-import Map "mo:core/Map";
 import Set "mo:core/Set";
+import Map "mo:core/Map";
 import List "mo:core/List";
-import Text "mo:core/Text";
 import Char "mo:core/Char";
+import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
-import Iter "mo:core/Iter";
 
 actor {
   let accessControlState = AccessControl.initState();
@@ -38,7 +37,6 @@ actor {
 
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // Security: Only admins and users can access profile data
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users access profiles");
@@ -60,8 +58,7 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // User-only: Add new media to the feed
-  public shared ({ caller }) func addMedia(_media : MediaType, caption : Text) : async FeedItem {
+  public shared ({ caller }) func addMedia(_media : MediaType, caption : ?Text) : async FeedItem {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: User authentication is required for adding media");
     };
@@ -70,7 +67,10 @@ actor {
       id = feedItems.size();
       media = _media;
       handle = "@" # caller.toText();
-      caption;
+      caption = switch (caption) {
+        case (null) { "" };
+        case (?cap) { cap };
+      };
       likeCount = 0;
     };
 
@@ -78,12 +78,10 @@ actor {
     newFeedItem;
   };
 
-  // Public: Anyone can view the feed (including guests)
   public query ({ caller }) func fetchFeedItems() : async [FeedItem] {
     feedItems.toArray();
   };
 
-  // User-only: Only users can like/unlike feed items
   public shared ({ caller }) func toggleLike(feedItemId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: User authentication is required to like/unlike items");
@@ -161,7 +159,6 @@ actor {
     );
   };
 
-  // User-only: Search requires authentication
   public query ({ caller }) func searchByKeyword(searchText : Text) : async [FeedItem] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Must be user or above to search");
