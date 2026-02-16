@@ -1,4 +1,96 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-update-the-internet-identity-login-flow-so-that-when-the-app-is-running-inside-an-android-apk-webview-or-otherwise-an-embedded-in-app-browser-login-does-not-open-internet-identity-inside-the-webview-instead-initiate-authentication-by-opening-the-device-s-external-browser-and-after-successful-authentication-return-the-user-back-to-the-app-and-complete-login",
+      "featureTitle": "Update the Internet Identity login flow so that, when the app is running inside an Android APK WebView (or otherwise an embedded/in-app browser), login does not open Internet Identity inside the WebView. Instead, initiate authentication by opening the device’s external browser and, after successful authentication, return the user back to the app and complete login.",
+      "files": [
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/embeddedBrowser.ts",
+        "frontend/src/utils/iiExternalReturn.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-preserve-the-existing-login-behavior-for-normal-desktop-mobile-browsers-non-webview-so-that-login-continues-to-work-as-it-does-today-unless-the-embedded-browser-workaround-is-needed",
+      "featureTitle": "Preserve the existing login behavior for normal desktop/mobile browsers (non-WebView) so that login continues to work as it does today unless the embedded-browser workaround is needed.",
+      "files": [
+        "frontend/src/components/auth/LoginButton.tsx",
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-user-facing-english-ui-feedback-for-the-workaround-flow-when-the-app-needs-to-switch-to-the-external-browser-for-login-inform-the-user-what-is-happening-and-what-to-do-next-and-show-an-in-progress-state-until-the-app-finishes-handling-the-return",
+      "featureTitle": "Add user-facing, English UI feedback for the workaround flow: when the app needs to switch to the external browser for login, inform the user what is happening and what to do next, and show an in-progress state until the app finishes handling the return.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/auth/LoginButton.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-safe-return-handling-after-external-browser-authentication-so-that-the-app-can-finalize-authentication-on-load-resume-and-does-not-get-stuck-in-a-partial-state-ensure-any-temporary-url-parameters-fragments-used-for-the-return-flow-are-cleaned-up-from-the-url-after-processing",
+      "featureTitle": "Implement safe return handling after external-browser authentication so that the app can finalize authentication on load/resume and does not get stuck in a partial state; ensure any temporary URL parameters/fragments used for the return flow are cleaned up from the URL after processing.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+        "frontend/src/utils/iiExternalReturn.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

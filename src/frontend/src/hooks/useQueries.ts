@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { useInternetIdentity } from './useInternetIdentity';
+import { useInternetIdentity } from './useInternetIdentityExternalBrowser';
 import type { FeedItem, UserProfile, MediaType, Comment } from '../backend';
 import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';

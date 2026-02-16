@@ -5,20 +5,21 @@ import { UploadButton } from './components/feed/UploadButton';
 import { SearchButton } from './components/search/SearchButton';
 import { SecurityButton } from './components/security/SecurityButton';
 import { PinChallengeDialog } from './components/security/PinChallengeDialog';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
+import { useInternetIdentity } from './hooks/useInternetIdentityExternalBrowser';
 import { useGetCallerUserProfile } from './hooks/useQueries';
 import { Toaster } from './components/ui/sonner';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function App() {
-  const { identity, isInitializing } = useInternetIdentity();
+  const { identity, isInitializing, loginStatus } = useInternetIdentity();
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
   const [pinChallengeOpen, setPinChallengeOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   const isAuthenticated = !!identity;
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+  const isFinalizing = loginStatus === 'finalizing';
 
   // Register service worker with update detection
   useEffect(() => {
@@ -99,13 +100,15 @@ export default function App() {
     setPinChallengeOpen(false);
   };
 
-  // Show loading state during initialization
-  if (isInitializing) {
+  // Show loading state during initialization or finalization
+  if (isInitializing || isFinalizing) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <div className="text-center">
           <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">
+            {isFinalizing ? 'Completing login...' : 'Loading...'}
+          </p>
         </div>
       </div>
     );

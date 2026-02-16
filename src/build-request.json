@@ -1,86 +1,91 @@
 {
   "kind": "build_request",
-  "title": "Rebuild and redeploy to regenerate a working ICP public URL (icp0.io)",
+  "title": "Fix Internet Identity login for Android APK by using external browser redirect and return-to-app flow",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-46",
-      "text": "Rebuild and redeploy both backend and frontend so the production deployment generates a working public ICP URL and the app loads successfully from the frontend canister.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Regenerate the ICP public app URL",
-          "Yes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A fresh deployment completes successfully for both backend and frontend.",
-        "The deployed app loads in a browser from the frontend canister without showing a blank page, a raw link page, or “Canister ID Not Resolved”."
-      ]
-    },
-    {
-      "id": "REQ-47",
-      "text": "Fix the frontend production asset serving so the deployed frontend canister serves the Vite production build output (frontend/dist) instead of source files, ensuring the deployed app shell does not reference the development entrypoint /src/main.tsx.",
+      "id": "REQ-1",
+      "text": "Update the Internet Identity login flow so that, when the app is running inside an Android APK WebView (or otherwise an embedded/in-app browser), login does not open Internet Identity inside the WebView. Instead, initiate authentication by opening the device’s external browser and, after successful authentication, return the user back to the app and complete login.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Regenerate the ICP public app URL"
+          "Yes I'm okay with the workaround where the APK temporary opened the device browser for login then automatically return to the app",
+          "Okay yes implement the login fixed"
         ]
       },
       "acceptanceCriteria": [
-        "Production deployment serves dist/index.html and dist/assets/* and does not serve or reference /src/main.tsx.",
-        "Opening the deployed icp0 URL shows the React app UI and loads bundled JS/CSS from /assets/* with HTTP 200 responses."
+        "In the Android APK packaging context, tapping “Login” does not show Google’s 'Access blocked: Internet Identity’s request does not comply with Google’s policies' error.",
+        "Login launches the system browser for Internet Identity authentication (not the embedded WebView).",
+        "After completing authentication in the external browser, the app returns to the ZIZO app view and the user is treated as authenticated (identity is available and authenticated-only UI behaves accordingly).",
+        "If the user cancels or the flow fails, the app returns to the app view and shows a clear, English error state without breaking the app shell."
       ]
     },
     {
-      "id": "REQ-48",
-      "text": "Make the deploy fail fast when the frontend build output is not production-ready by running the existing frontend verification scripts as a required gate before deploying the frontend canister.",
+      "id": "REQ-2",
+      "text": "Preserve the existing login behavior for normal desktop/mobile browsers (non-WebView) so that login continues to work as it does today unless the embedded-browser workaround is needed.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Regenerate the ICP public app URL"
+          "Okay yes implement the login fixed"
         ]
       },
       "acceptanceCriteria": [
-        "The production deploy flow runs the equivalent of frontend/scripts/verify-dist-shell.ts and frontend/scripts/verify-frontend-canister-assets-config.ts before deploying the frontend canister.",
-        "If dist/index.html references /src/main.tsx or required dist static files are missing, the deploy fails with a clear error message and does not proceed to deploy the broken frontend."
+        "On standard browsers (e.g., Chrome/Firefox/Safari), the login flow continues to function without forcing an external-browser workaround.",
+        "Logout continues to clear identity and clears React Query cache as currently implemented."
       ]
     },
     {
-      "id": "REQ-49",
-      "text": "After the successful rebuild and redeploy, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io.",
-      "target": "unknown",
+      "id": "REQ-3",
+      "text": "Add user-facing, English UI feedback for the workaround flow: when the app needs to switch to the external browser for login, inform the user what is happening and what to do next, and show an in-progress state until the app finishes handling the return.",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Regenerate the ICP public app URL"
+          "I successfully generated an APK and when I also login in it showed (Access blocked: Internet Identity’s request does not comply with Google’s policies)"
         ]
       },
       "acceptanceCriteria": [
-        "The final output includes a single, concrete icp0 URL in the format https://<frontend-canister-id>.icp0.io (not a caffeine.xyz preview URL)."
+        "When the workaround is triggered, the user sees a clear message indicating that login will open in the device browser and they should return to the app afterward.",
+        "The login button shows an in-progress/disabled state while the flow is being initiated and while the app is finalizing login after return.",
+        "All user-facing text added/changed for this work is in English."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement safe return handling after external-browser authentication so that the app can finalize authentication on load/resume and does not get stuck in a partial state; ensure any temporary URL parameters/fragments used for the return flow are cleaned up from the URL after processing.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "...temporary opened the device browser for login then automatically return to the app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After returning from the external browser, the app finalizes authentication automatically without requiring a second manual login click.",
+        "Any temporary callback-related URL data used for the workaround is removed from the address bar after it is processed.",
+        "If finalization fails, the app remains usable and surfaces a clear error with an option to retry login."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if an upgrade requires state migration.",
-    "Do not edit any files under frontend/src/components/ui or any other frontend immutablePaths (compose them instead).",
-    "Use English for any user-facing text."
+    "Do not modify files under frontend/src/components/ui (compose them instead).",
+    "Do not edit immutable hook entrypoints listed in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts may be immutable depending on project setup; if immutable in this workspace, implement the workaround by adding a new hook/module and updating call sites without editing the immutable file).",
+    "Backend must remain single-actor; no backend changes are required for this login workaround."
   ],
   "nonGoals": [
-    "Adding new feed/product features unrelated to deployment or public URL regeneration.",
-    "Using external cloud hosting or non-Internet-Computer deployment targets.",
-    "Replacing Internet Identity authentication with third-party authentication providers."
+    "Implementing native Android code (Java/Kotlin) for Chrome Custom Tabs.",
+    "Adding third-party authentication providers beyond Internet Identity.",
+    "Building or distributing the APK itself; this request is limited to app code changes that enable the workaround login flow."
   ],
   "imageRequirements": {
     "required": [],

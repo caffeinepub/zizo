@@ -1,4 +1,4 @@
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useInternetIdentity } from '../../hooks/useInternetIdentityExternalBrowser';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { LogIn, LogOut, Loader2 } from 'lucide-react';
@@ -8,7 +8,7 @@ export function LoginButton() {
   const queryClient = useQueryClient();
 
   const isAuthenticated = !!identity;
-  const isLoggingIn = loginStatus === 'logging-in';
+  const isLoggingIn = loginStatus === 'logging-in' || loginStatus === 'finalizing';
 
   const handleAuth = async () => {
     if (isAuthenticated) {
@@ -44,7 +44,7 @@ export function LoginButton() {
       {isLoggingIn ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Logging in...
+          {loginStatus === 'finalizing' ? 'Completing...' : 'Logging in...'}
         </>
       ) : isAuthenticated ? (
         <>

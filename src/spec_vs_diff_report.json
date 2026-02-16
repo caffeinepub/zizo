@@ -1,68 +1,70 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T21:53:24.271Z",
-  "summary": "The diff does not implement the deployment/asset-serving changes required to regenerate a working icp0.io public URL. Instead, it mainly adds/changes application features (backend feed/comments/profiles and frontend URL param utilities) that are unrelated to the requested rebuild/redeploy and frontend canister production-asset serving fixes.",
+  "generatedAt": "2026-02-16T12:50:26.743Z",
+  "summary": "The diff introduces a new Internet Identity provider/hook intended to support an external-browser login workaround in embedded browsers, plus utilities for embedded-browser detection and return URL cleanup. However, due to truncation and limited evidence in the diff summary, key acceptance-criteria behaviors (actually opening the system browser, reliably finalizing on return, and surfacing a clear retryable error UI) cannot be fully verified. There are also unrelated additions/changes (not requested) around service worker update UX and project state tracking.",
   "missing_requirements": [
     {
-      "id": "REQ-46",
-      "requirement": "Rebuild and redeploy both backend and frontend so the production deployment generates a working public ICP URL and the app loads successfully from the frontend canister.",
-      "reason": "No changes in the diff summary indicate updates to the build/deploy pipeline, canister configs, or deployment scripts to ensure a fresh successful deploy and working frontend-canister-served app.",
+      "id": "REQ-1",
+      "requirement": "When running inside an Android APK WebView/embedded browser, initiate authentication by opening the device’s external browser (not the WebView) and then return to the app and complete login; if user cancels/fails, return to app and show a clear English error state without breaking the shell.",
+      "reason": "The new hook/provider is truncated right where the external-browser redirect logic would be, so there is no verifiable evidence that the implementation actually launches the system browser (vs. navigating within the WebView), nor that cancel/failure returns cleanly to the app shell with a clear error state.",
       "evidence": [
-        "<file-diff>: only modified backend/main.mo, frontend/src/utils/urlParams.ts, project_state.json; no deploy/config files shown"
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx (truncated at \"toast.info('Opening b\" before redirect/return mechanics are shown)"
       ]
     },
     {
-      "id": "REQ-47",
-      "requirement": "Fix the frontend production asset serving so the deployed frontend canister serves the Vite production build output (frontend/dist) instead of source files, and does not reference /src/main.tsx.",
-      "reason": "No evidence of changes to frontend canister asset configuration (e.g., assets config, canister config, build output wiring) or anything ensuring dist/index.html and dist/assets/* are served in production.",
+      "id": "REQ-2",
+      "requirement": "Preserve existing login behavior for normal (non-WebView) browsers; do not force external-browser workaround there; logout behavior should remain (clears identity and React Query cache).",
+      "reason": "Although there are utilities for embedded-browser detection, the diff summary does not show the conditional branching that preserves the old in-browser login path for non-embedded browsers (the relevant logic is in a truncated file). Logout cache clearing is evidenced in LoginButton, but preservation of the non-WebView login behavior is not verifiable from the truncated provider implementation.",
       "evidence": [
-        "<file-diff>: no changes shown to canister/frontend asset configuration or build output paths; only frontend/src/utils/urlParams.ts modified"
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx (truncated; conditional selection of external vs existing flow not shown)",
+        "frontend/src/utils/embeddedBrowser.ts (adds detection, but does not show how it is used to preserve default behavior)"
       ]
     },
     {
-      "id": "REQ-48",
-      "requirement": "Make deploy fail fast when frontend build output is not production-ready by running existing verification scripts (verify-dist-shell.ts and verify-frontend-canister-assets-config.ts) as a required gate before deploying the frontend canister.",
-      "reason": "No evidence of any deploy script, CI pipeline, or command changes to run the verification scripts prior to frontend canister deployment, nor any added failure gating/error messaging.",
+      "id": "REQ-3",
+      "requirement": "Add user-facing English UI feedback for the workaround: inform the user that login will open in the device browser and they should return afterward, and show in-progress/disabled state while initiating and finalizing.",
+      "reason": "The login button shows an in-progress/disabled state and 'Completing...'/'Logging in...' labels, but the explicit user-facing message explaining that the device browser will open and they should return to the app is only hinted at (a truncated toast call) and cannot be confirmed.",
       "evidence": [
-        "<file-diff>: no changes shown to scripts, CI, package.json, dfx configuration, or deploy tooling"
+        "frontend/src/components/auth/LoginButton.tsx (shows disabled/loading states and English labels)",
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx (truncated toast message: \"toast.info('Opening b\")"
       ]
     },
     {
-      "id": "REQ-49",
-      "requirement": "After successful rebuild and redeploy, provide the working public app URL in the exact format https://<your-frontend-canister-id>.icp0.io.",
-      "reason": "The diff contains no output/log/documentation that provides a concrete deployed frontend canister id / icp0 URL.",
+      "id": "REQ-4",
+      "requirement": "Finalize authentication automatically on load/resume after external-browser authentication; clean temporary callback URL parameters/fragments after processing; if finalization fails, keep app usable and show a clear error with an option to retry login.",
+      "reason": "URL cleanup utilities exist, but the diff summary does not show the provider logic that (a) detects return and triggers finalization automatically on load/resume, and (b) renders/otherwise provides a clear retry option if finalization fails. The presence of helpers alone is insufficient to confirm the end-to-end return handling.",
       "evidence": [
-        "<file-diff>: no release/deploy output or documentation files modified to include the final URL"
+        "frontend/src/utils/iiExternalReturn.ts (has isReturningFromExternalLogin and cleanupCallbackUrl helpers)",
+        "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx (truncated; return detection/finalization flow not shown, retry UI not shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Backend changes adding/expanding features such as comments storage/types, user profiles, media/blob storage mixins, and additional authorization-related behaviors not tied to deployment/public URL regeneration.",
-      "reason": "BuildRequest explicitly focuses on rebuild/redeploy and frontend production asset serving and deploy gating; it lists non-goals for unrelated feed/product features. The backend changes appear feature-oriented rather than deployment-oriented.",
+      "description": "Service worker registration with update detection and a user-facing 'Update available' toast/refresh action in the main App component.",
+      "reason": "Not requested by the BuildRequest, which is limited to an Internet Identity Android APK external-browser login workaround and related UI/return handling.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/App.tsx (adds service worker register/update polling and toast prompting refresh)"
       ]
     },
     {
-      "description": "Frontend utility for URL parameter parsing plus sessionStorage persistence helpers (getPersistedUrlParameter, storeSessionParameter, etc.).",
-      "reason": "Not requested by REQ-46..REQ-49, which are about production asset serving and deploy gating for the frontend canister, not URL parameter/session storage utilities.",
+      "description": "Addition/update of project tracking metadata file (project_state.json) describing feature requests/status.",
+      "reason": "Not part of the requested app-code login workaround requirements.",
       "evidence": [
-        "frontend/src/utils/urlParams.ts"
-      ]
-    },
-    {
-      "description": "Project metadata updated to describe expanding the app with a TikTok-style comments system and share feature with deep links.",
-      "reason": "This directly conflicts with the BuildRequest non-goals (no new feed/product features unrelated to deployment/public URL regeneration) and is not part of REQ-46..REQ-49.",
-      "evidence": [
-        "project_state.json (summary field)"
+        "project_state.json"
       ]
     }
   ],
-  "confidence": 0.78,
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/auth/LoginButton.tsx",
+    "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/utils/embeddedBrowser.ts",
+    "frontend/src/utils/iiExternalReturn.ts",
     "frontend/src/utils/urlParams.ts",
     "project_state.json"
   ]

@@ -39,25 +39,34 @@ export function getUrlParameter(paramName: string): string | null {
  * @param paramName - The name of the parameter to remove
  */
 export function removeUrlParameter(paramName: string): void {
-    if (!window.history.replaceState) {
+    if (!window.history?.replaceState) {
         return;
     }
 
-    // Handle hash-based routing
-    const hash = window.location.hash;
-    if (hash && hash.includes('?')) {
-        clearParamFromHash(paramName);
-        return;
+    const url = new URL(window.location.href);
+    
+    // Remove from regular query string
+    url.searchParams.delete(paramName);
+    
+    // Remove from hash if present
+    const hash = url.hash;
+    if (hash && hash.length > 1) {
+        const hashContent = hash.substring(1);
+        const queryStartIndex = hashContent.indexOf('?');
+        
+        if (queryStartIndex !== -1) {
+            const routePath = hashContent.substring(0, queryStartIndex);
+            const queryString = hashContent.substring(queryStartIndex + 1);
+            
+            const params = new URLSearchParams(queryString);
+            params.delete(paramName);
+            
+            const newQueryString = params.toString();
+            url.hash = routePath + (newQueryString ? '?' + newQueryString : '');
+        }
     }
-
-    // Handle regular query string
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has(paramName)) {
-        urlParams.delete(paramName);
-        const newQueryString = urlParams.toString();
-        const newUrl = window.location.pathname + (newQueryString ? '?' + newQueryString : '') + window.location.hash;
-        window.history.replaceState(null, '', newUrl);
-    }
+    
+    window.history.replaceState({}, '', url.toString());
 }
 
 /**

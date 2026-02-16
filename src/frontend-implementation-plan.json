@@ -1,94 +1,114 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix ICP frontend canister production asset serving and deployment gating",
+  "title": "External-browser Internet Identity login workaround for Android APK WebView",
   "requirements": [
     {
-      "id": "REQ-46",
-      "summary": "Ensure the production redeploy flow rebuilds and redeploys in an order that results in a working icp0 URL and a loadable frontend canister app.",
+      "id": "REQ-1",
+      "summary": "Add an external-browser Internet Identity login path for Android APK WebView/embedded browsers, with return-to-app completion.",
       "acceptanceCriteria": [
-        "A fresh deployment completes successfully for both backend and frontend.",
-        "The deployed app loads in a browser from the frontend canister without showing a blank page, a raw link page, or “Canister ID Not Resolved”."
+        "In the Android APK packaging context, tapping “Login” does not show Google’s 'Access blocked: Internet Identity’s request does not comply with Google’s policies' error.",
+        "Login launches the system browser for Internet Identity authentication (not the embedded WebView).",
+        "After completing authentication in the external browser, the app returns to the ZIZO app view and the user is treated as authenticated (identity is available and authenticated-only UI behaves accordingly).",
+        "If the user cancels or the flow fails, the app returns to the app view and shows a clear, English error state without breaking the app shell."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/deploy-frontend-prod.sh",
-          "operation": "modify",
-          "description": "Update the production deploy script to redeploy the full app (deploy backend first, then frontend) from a single flow, while keeping the existing build + verification gates before the frontend canister deploy; ensure the script surfaces clear failures and outputs the final icp0 URL upon success."
-        },
-        {
-          "path": "frontend/DEPLOYMENT.md",
-          "operation": "modify",
-          "description": "Expand deployment documentation to explicitly describe the correct production redeploy sequence (backend then frontend) and how to confirm the frontend canister serves the production bundle (no /src/main.tsx, assets load from dist)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-47",
-      "summary": "Fix production asset serving so the deployed frontend canister serves the Vite production build output from dist rather than source files.",
-      "acceptanceCriteria": [
-        "Production deployment serves dist/index.html and dist/assets/* and does not serve or reference /src/main.tsx.",
-        "Opening the deployed icp0 URL shows the React app UI and loads bundled JS/CSS from /assets/* with HTTP 200 responses."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/scripts/verify-dist-shell.ts",
-          "operation": "modify",
-          "description": "Strengthen dist shell verification to more strictly validate that dist/index.html references only bundled /assets/* outputs and does not reference /src/main.tsx, and improve failure messages to clearly indicate that serving source files indicates a misconfigured frontend assets canister."
-        },
-        {
-          "path": "frontend/scripts/verify-frontend-canister-assets-config.ts",
-          "operation": "modify",
-          "description": "Tighten frontend canister asset configuration checks to hard-fail on any configuration that could cause source-file serving (e.g., missing dist source, presence of src in sources), and emit explicit remediation instructions referencing the required assets-canister dist configuration."
-        },
-        {
-          "path": "frontend/DEPLOYMENT.md",
-          "operation": "modify",
-          "description": "Document the expected production behavior (dist/index.html served; bundled JS/CSS under /assets/*) and add a troubleshooting section for the specific failure mode where the deployed shell references /src/main.tsx."
-        }
-      ]
-    },
-    {
-      "id": "REQ-48",
-      "summary": "Make deploy fail fast by enforcing existing frontend verification scripts as a required gate before deploying the frontend canister.",
-      "acceptanceCriteria": [
-        "The production deploy flow runs the equivalent of frontend/scripts/verify-dist-shell.ts and frontend/scripts/verify-frontend-canister-assets-config.ts before deploying the frontend canister.",
-        "If dist/index.html references /src/main.tsx or required dist static files are missing, the deploy fails with a clear error message and does not proceed to deploy the broken frontend."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/scripts/deploy-frontend-prod.sh",
-          "operation": "modify",
-          "description": "Harden the deploy script to be an explicit gate (strict shell options, clear phase banners, and guaranteed non-zero exit on verification failure) so it never proceeds to deploy the frontend canister when verification fails."
-        },
-        {
-          "path": "frontend/scripts/verify-dist-shell.ts",
-          "operation": "modify",
-          "description": "Ensure verification failures are concise and actionable (explicitly call out /src/main.tsx references and missing required dist assets) so the deploy gate error is clear."
-        },
-        {
-          "path": "frontend/scripts/verify-frontend-canister-assets-config.ts",
-          "operation": "modify",
-          "description": "Ensure the canister-assets configuration verification clearly reports which dfx.json fields are invalid for production asset serving and exits non-zero to stop deployment."
-        }
-      ]
-    },
-    {
-      "id": "REQ-49",
-      "summary": "Provide a reliable way to output the working icp0 public app URL after redeploy in the exact required format.",
-      "acceptanceCriteria": [
-        "The final output includes a single, concrete icp0 URL in the format https://<frontend-canister-id>.icp0.io (not a caffeine.xyz preview URL)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/scripts/deploy-frontend-prod.sh",
-          "operation": "modify",
-          "description": "Adjust the successful deploy output to print a single concrete icp0 URL line in the exact format https://<frontend-canister-id>.icp0.io, and persist it to a simple text file under frontend/ so it can be copied/pasted without ambiguity."
-        },
-        {
-          "path": "frontend/scripts/print-icp0-url.sh",
+          "path": "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
           "operation": "create",
-          "description": "Create a small helper script that reads the deployed frontend canister id via dfx and prints exactly one URL in the format https://<frontend-canister-id>.icp0.io for easy retrieval after deployment."
+          "description": "Create a new Internet Identity provider/hook module that detects embedded Android WebView and initiates an external-browser authentication flow with safe return-to-app completion (including storing temporary state needed to finalize auth after return). Keep it API-compatible with the existing hook where possible so identity-driven UI continues to work. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/embeddedBrowser.ts",
+          "operation": "create",
+          "description": "Add embedded/in-app browser detection helpers (e.g., Android WebView heuristics) used to decide when to trigger the external-browser workaround versus the existing behavior. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/iiExternalReturn.ts",
+          "operation": "create",
+          "description": "Add helpers to manage the workaround return flow (persisting a nonce/state marker, reading callback-related URL params/fragments, and signaling the provider to finalize authentication after returning from the external browser). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Wire the app to use the new external-browser-capable Internet Identity provider instead of the current provider so identity becomes available after returning from external authentication. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Update Internet Identity hook import to the new external-browser-capable module so the backend actor is created with the finalized identity after external return. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update Internet Identity hook import to the new external-browser-capable module so authenticated queries/mutations react correctly to identity changes after external return. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Preserve current Internet Identity behavior on standard browsers and keep logout + React Query cache clearing unchanged.",
+      "acceptanceCriteria": [
+        "On standard browsers (e.g., Chrome/Firefox/Safari), the login flow continues to function without forcing an external-browser workaround.",
+        "Logout continues to clear identity and clears React Query cache as currently implemented."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+          "operation": "modify",
+          "description": "Ensure the new provider only triggers the external-browser workaround when embedded/in-app browser detection indicates it is necessary; otherwise keep the current in-browser AuthClient login behavior. Maintain compatible logout/clear behavior so existing cache clearing in the UI continues to work. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "operation": "modify",
+          "description": "Keep existing logout behavior intact (calling clear() and clearing React Query cache) while updating imports/hook usage to the new provider so desktop/mobile browsers continue to log in as they do today when the workaround is not needed. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add clear English UI messaging and in-progress states for the external-browser workaround login flow.",
+      "acceptanceCriteria": [
+        "When the workaround is triggered, the user sees a clear message indicating that login will open in the device browser and they should return to the app afterward.",
+        "The login button shows an in-progress/disabled state while the flow is being initiated and while the app is finalizing login after return.",
+        "All user-facing text added/changed for this work is in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "operation": "modify",
+          "description": "Add user-facing English feedback when the workaround path is used (e.g., toast/banner text explaining the browser switch and return-to-app step), and ensure the button shows a disabled/in-progress state both during external launch and during post-return finalization. Use the existing authorization-based auth flow patterns (Internet Identity + cache clearing) as guidance; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Surface clear English error messaging for workaround failures (e.g., show a toast that login failed/canceled with a retry hint) while keeping the app shell usable. Ensure authenticated-only UI reacts correctly once identity becomes available. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Finalize authentication automatically after external-browser return, clean temporary URL data, and avoid partial/stuck states with retry support.",
+      "acceptanceCriteria": [
+        "After returning from the external browser, the app finalizes authentication automatically without requiring a second manual login click.",
+        "Any temporary callback-related URL data used for the workaround is removed from the address bar after it is processed.",
+        "If finalization fails, the app remains usable and surfaces a clear error with an option to retry login."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+          "operation": "modify",
+          "description": "Implement safe on-load/on-resume finalization for the workaround flow: detect return markers, complete authentication automatically, and ensure the provider transitions out of any intermediate state. Expose a retry-friendly error state to the UI when finalization fails. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/iiExternalReturn.ts",
+          "operation": "modify",
+          "description": "Implement URL cleanup after processing the callback/return markers (using history.replaceState where available) and ensure temporary query/hash data and any session markers are cleared to avoid re-processing/stuck states. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Trigger/allow automatic post-return finalization behavior on app load and ensure the shell stays usable if finalization fails, with a clear retry path (e.g., retry by clicking Login again). Verify the component's usage instructions before implementing."
         }
       ]
     }

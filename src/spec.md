@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Rebuild and redeploy the app on the Internet Computer to regenerate a working public icp0.io URL and ensure the frontend canister serves the correct production build.
+**Goal:** Fix Internet Identity login in the Android APK/WebView context by using an external browser authentication flow that returns to the app and completes login automatically, while preserving normal browser behavior.
 
 **Planned changes:**
-- Rebuild and redeploy both backend and frontend canisters to produce a fresh, working public ICP URL.
-- Fix frontend production asset serving so the deployed frontend canister serves the Vite build output from `frontend/dist` (not source files) and does not reference `/src/main.tsx`.
-- Add a fail-fast deployment gate by running the existing frontend dist verification scripts before deploying the frontend canister.
-- Output the final working public app URL in the format `https://<frontend-canister-id>.icp0.io`.
+- Detect when the app is running inside an embedded/in-app browser (e.g., Android APK WebView) and, in that case, initiate Internet Identity login by opening the device’s external browser instead of authenticating inside the WebView.
+- Add a safe return-to-app handling path that finalizes authentication automatically on load/resume after the external browser completes, and cleans any temporary callback parameters/fragments from the URL.
+- Add English user-facing UI feedback for the workaround flow (explain that login will open in the device browser, show in-progress/disabled login state, and show clear error/retry if cancelled or failed).
+- Keep existing Internet Identity login/logout behavior unchanged for standard (non-WebView) browsers, including current logout cache-clearing behavior.
 
-**User-visible outcome:** The app loads successfully in a browser from the deployed frontend canister at a working `https://<frontend-canister-id>.icp0.io` URL (not blank, not a raw link page, and not “Canister ID Not Resolved”).
+**User-visible outcome:** In the Android APK, tapping “Login” opens the system browser for Internet Identity and then returns to the app already logged in (or shows a clear English error with retry). In normal browsers, login/logout continues to work as it does today.

@@ -1,12 +1,12 @@
 {
-  "frontend/src/App.tsx": "Main application component with authentication, profile setup, security verification, feed rendering, and enhanced service worker registration with automatic update detection, periodic update checks, and user notification for available updates.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for feed items, uploads, likes, user profiles, search, comments (fetching and adding with media support), with optimistic updates and proper error handling.",
+  "frontend/src/App.tsx": "Main application component with authentication, profile setup, and loading states for both initialization and external-browser login finalization.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations, updated to use the external-browser-capable Internet Identity provider.",
   "frontend/src/components/feed/VideoFeed.tsx": "Feed container with scroll-to-item support, intersection observer for active item detection, deep-link auto-scroll on load with postId parameter handling, and proper loading/error states.",
   "frontend/src/components/feed/VideoFeedItem.tsx": "Minimal placeholder file to prevent build errors; actual feed item component is FeedItem.tsx.",
   "frontend/src/components/feed/FeedOverlay.tsx": "Overlay component that displays creator handle, caption text, and conditionally renders speed control only for active video items with gradient background and safe-area support.",
   "frontend/src/components/feed/InteractionRail.tsx": "Interaction rail with like, comment (opens sheet), share (opens menu), and download buttons, displaying real comment counts.",
   "frontend/src/components/feed/SpeedControl.tsx": "Dropdown menu component for selecting video playback speed (0.5×, 1×, 1.5×, 2×) with visual feedback for current selection, only shown for video items.",
-  "frontend/src/components/auth/LoginButton.tsx": "Authentication button component that handles login/logout flow with Internet Identity and clears query cache on logout with proper error handling.",
+  "frontend/src/components/auth/LoginButton.tsx": "Authentication button that handles login/logout with support for external-browser flow, showing appropriate loading states during login and finalization.",
   "frontend/src/components/auth/ProfileSetup.tsx": "Profile setup modal that prompts new users to enter their name before accessing the app with form validation.",
   "frontend/src/hooks/useDoubleTap.ts": "Custom hook that detects double-click (desktop) and double-tap (mobile) gestures with configurable delay for like interactions.",
   "frontend/src/index.css": "Global styles with OKLCH-based dark theme color system, full-screen layout utilities, PWA safe-area inset handling, stable viewport height strategy using dvh, overscroll prevention, and touch-optimized scrolling.",
@@ -35,7 +35,7 @@
   "frontend/scripts/verify-frontend-canister-assets-config.ts": "Verification script that reads dfx.json and validates the frontend canister is type \"assets\" with source pointing to \"frontend/dist\" (not \"frontend/src\"), failing with detailed error messages and fix instructions if misconfigured.",
   "frontend/scripts/deploy-frontend-prod.sh": "Automated production deployment script that builds, verifies dist shell and canister config, deploys to IC, and outputs the public icp0 URL with verification checklist and APK conversion instructions.",
   "frontend/src/components/feed/VideoOverlayControls.tsx": "Overlay control component providing play/pause and mute/unmute buttons for active video items with semi-transparent backdrop styling.",
-  "frontend/src/utils/urlParams.ts": "Utility functions for parsing and managing URL parameters with support for both regular query strings and hash-based routing, including getUrlParameter, removeUrlParameter (newly exported), session storage helpers, and secure secret parameter handling.",
+  "frontend/src/utils/urlParams.ts": "Utility functions for parsing and managing URL parameters with support for both query strings and hash-based routing, including session storage helpers, secure secret parameter handling, and the newly added removeUrlParameter function for cleaning up URL parameters.",
   "frontend/src/utils/shareLinks.ts": "Utilities for generating per-post share URLs, copying to clipboard via Clipboard API, and invoking native share sheet when available.",
   "frontend/src/components/comments/CommentsSheet.tsx": "TikTok-style bottom sheet component for displaying comments with header, scrollable list, composer, and loading/error states.",
   "frontend/src/components/comments/CommentList.tsx": "Comment list renderer displaying author avatars, text, and optional media attachments (images/videos) using ExternalBlob direct URLs.",
@@ -43,5 +43,10 @@
   "frontend/src/components/share/ShareMenu.tsx": "Share menu dialog offering copy-link and native share sheet options with success/error feedback via toasts.",
   "frontend/public/assets/generated/zizo-app-icon.dim_192x192.png": "192x192 PNG app icon for PWA manifest and service worker caching.",
   "frontend/public/assets/generated/zizo-app-icon.dim_512x512.png": "512x512 PNG app icon for PWA manifest and service worker caching.",
-  "frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png": "512x512 maskable PNG app icon for PWA manifest adaptive icon support on Android."
+  "frontend/public/assets/generated/zizo-app-icon-maskable.dim_512x512.png": "512x512 maskable PNG app icon for PWA manifest adaptive icon support on Android.",
+  "frontend/src/utils/embeddedBrowser.ts": "Utility functions to detect if the app is running inside an embedded/in-app browser (Android WebView, iOS WebView, or social media in-app browsers) where Internet Identity login may be blocked.",
+  "frontend/src/utils/iiExternalReturn.ts": "Utilities for managing the external-browser Internet Identity return flow, including state persistence, callback detection, nonce validation, and URL cleanup after authentication.",
+  "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx": "Enhanced Internet Identity provider that detects embedded browsers and automatically uses external-browser login flow when needed, with automatic finalization after return and clear user feedback.",
+  "frontend/src/main.tsx": "Application entry point that wraps the app with the external-browser-capable Internet Identity provider and React Query provider.",
+  "frontend/src/hooks/useActor.ts": "Hook for initializing the backend actor with the identity from the external-browser-capable Internet Identity provider."
 }
