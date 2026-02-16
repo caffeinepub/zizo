@@ -8,6 +8,7 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const ThreadedCommentView = IDL.Rec();
 export const _CaffeineStorageCreateCertificateResult = IDL.Record({
   'method' : IDL.Text,
   'blob_hash' : IDL.Text,
@@ -36,6 +37,24 @@ export const FeedItem = IDL.Record({
   'likeCount' : IDL.Nat,
   'caption' : IDL.Text,
   'handle' : IDL.Text,
+});
+ThreadedCommentView.fill(
+  IDL.Record({
+    'id' : IDL.Nat,
+    'media' : IDL.Opt(MediaType),
+    'likeCount' : IDL.Nat,
+    'text' : IDL.Text,
+    'author' : IDL.Principal,
+    'replies' : IDL.Vec(ThreadedCommentView),
+  })
+);
+export const ReplyView = IDL.Record({
+  'id' : IDL.Nat,
+  'media' : IDL.Opt(MediaType),
+  'likeCount' : IDL.Nat,
+  'text' : IDL.Text,
+  'author' : IDL.Principal,
+  'replies' : IDL.Vec(ThreadedCommentView),
 });
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
@@ -78,17 +97,30 @@ export const idlService = IDL.Service({
       [],
     ),
   'addMedia' : IDL.Func([MediaType, IDL.Opt(IDL.Text)], [FeedItem], []),
+  'addReply' : IDL.Func(
+      [IDL.Nat, IDL.Nat, IDL.Text, IDL.Opt(MediaType)],
+      [IDL.Opt(ReplyView), IDL.Vec(ReplyView)],
+      [],
+    ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'deleteComment' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
+  'deleteReply' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Nat], [], []),
   'fetchFeedItems' : IDL.Func([], [IDL.Vec(FeedItem)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
+  'getThreadedComments' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(ThreadedCommentView)],
+      ['query'],
+    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'likeComment' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchByKeyword' : IDL.Func([IDL.Text], [IDL.Vec(FeedItem)], ['query']),
   'toggleLike' : IDL.Func([IDL.Text], [], []),
@@ -97,6 +129,7 @@ export const idlService = IDL.Service({
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const ThreadedCommentView = IDL.Rec();
   const _CaffeineStorageCreateCertificateResult = IDL.Record({
     'method' : IDL.Text,
     'blob_hash' : IDL.Text,
@@ -125,6 +158,24 @@ export const idlFactory = ({ IDL }) => {
     'likeCount' : IDL.Nat,
     'caption' : IDL.Text,
     'handle' : IDL.Text,
+  });
+  ThreadedCommentView.fill(
+    IDL.Record({
+      'id' : IDL.Nat,
+      'media' : IDL.Opt(MediaType),
+      'likeCount' : IDL.Nat,
+      'text' : IDL.Text,
+      'author' : IDL.Principal,
+      'replies' : IDL.Vec(ThreadedCommentView),
+    })
+  );
+  const ReplyView = IDL.Record({
+    'id' : IDL.Nat,
+    'media' : IDL.Opt(MediaType),
+    'likeCount' : IDL.Nat,
+    'text' : IDL.Text,
+    'author' : IDL.Principal,
+    'replies' : IDL.Vec(ThreadedCommentView),
   });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
@@ -167,17 +218,30 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'addMedia' : IDL.Func([MediaType, IDL.Opt(IDL.Text)], [FeedItem], []),
+    'addReply' : IDL.Func(
+        [IDL.Nat, IDL.Nat, IDL.Text, IDL.Opt(MediaType)],
+        [IDL.Opt(ReplyView), IDL.Vec(ReplyView)],
+        [],
+      ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'deleteComment' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
+    'deleteReply' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Nat], [], []),
     'fetchFeedItems' : IDL.Func([], [IDL.Vec(FeedItem)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
+    'getThreadedComments' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(ThreadedCommentView)],
+        ['query'],
+      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'likeComment' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'searchByKeyword' : IDL.Func([IDL.Text], [IDL.Vec(FeedItem)], ['query']),
     'toggleLike' : IDL.Func([IDL.Text], [], []),

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentityExternalBrowser';
-import type { FeedItem, UserProfile, MediaType, Comment } from '../backend';
+import type { FeedItem, UserProfile, MediaType, Comment, ThreadedCommentView } from '../backend';
 import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
 
@@ -63,7 +63,6 @@ export function useUploadMedia() {
       return actor.addMedia(mediaType, normalizedCaption || null);
     },
     onSuccess: (newItem) => {
-      // Optimistically add to cache
       queryClient.setQueryData<FeedItem[]>(['feedItems'], (old) => {
         if (!old) return [newItem];
         return [newItem, ...old];
@@ -76,7 +75,6 @@ export function useUploadMedia() {
       if (error.message?.includes('Unauthorized')) {
         toast.error('Please log in to upload content');
       } else if (error.message?.includes('verification')) {
-        // Verification required - will be handled by parent
         throw error;
       } else {
         toast.error('Upload failed. Please try again.');
@@ -237,6 +235,25 @@ export function useGetComments(feedItemId: bigint) {
   });
 }
 
+export function useGetThreadedComments(feedItemId: bigint) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<ThreadedCommentView[]>({
+    queryKey: ['threadedComments', feedItemId.toString()],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getThreadedComments(feedItemId);
+      } catch (error: any) {
+        console.error('Get threaded comments error:', error);
+        throw new Error('Failed to load comments. Please try again.');
+      }
+    },
+    enabled: !!actor && !actorFetching,
+    staleTime: 1000 * 30,
+  });
+}
+
 export function useAddComment() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -283,6 +300,9 @@ export function useAddComment() {
       queryClient.invalidateQueries({ 
         queryKey: ['comments', variables.feedItemId.toString()] 
       });
+      queryClient.invalidateQueries({ 
+        queryKey: ['threadedComments', variables.feedItemId.toString()] 
+      });
       toast.success('Comment posted!');
     },
     onError: (error: any) => {
@@ -291,6 +311,148 @@ export function useAddComment() {
         toast.error('Please log in to comment');
       } else {
         toast.error('Failed to post comment. Please try again.');
+      }
+    },
+  });
+}
+
+export function useLikeComment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ feedItemId, commentId }: { feedItemId: bigint; commentId: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.likeComment(feedItemId, commentId);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['threadedComments', variables.feedItemId.toString()] 
+      });
+    },
+    onError: (error: any) => {
+      console.error('Like comment error:', error);
+      if (error.message?.includes('Unauthorized')) {
+        toast.error('Please log in to like comments');
+      } else {
+        toast.error('Failed to like comment. Please try again.');
+      }
+    },
+  });
+}
+
+export function useAddReply() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      feedItemId, 
+      parentCommentId,
+      text, 
+      media 
+    }: { 
+      feedItemId: bigint; 
+      parentCommentId: bigint;
+      text: string; 
+      media?: { file: File; onProgress?: (percentage: number) => void };
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+
+      let mediaType: MediaType | null = null;
+
+      if (media) {
+        const arrayBuffer = await media.file.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+
+        let blob = ExternalBlob.fromBytes(bytes);
+        if (media.onProgress) {
+          blob = blob.withUploadProgress(media.onProgress);
+        }
+
+        const isImage = media.file.type.startsWith('image/');
+        mediaType = isImage
+          ? { __kind__: 'image', image: blob }
+          : { __kind__: 'video', video: blob };
+      }
+
+      return actor.addReply(feedItemId, parentCommentId, text, mediaType);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['threadedComments', variables.feedItemId.toString()] 
+      });
+      toast.success('Reply posted!');
+    },
+    onError: (error: any) => {
+      console.error('Add reply error:', error);
+      if (error.message?.includes('Unauthorized')) {
+        toast.error('Please log in to reply');
+      } else {
+        toast.error('Failed to post reply. Please try again.');
+      }
+    },
+  });
+}
+
+export function useDeleteComment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ feedItemId, commentId }: { feedItemId: bigint; commentId: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.deleteComment(feedItemId, commentId);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['threadedComments', variables.feedItemId.toString()] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['comments', variables.feedItemId.toString()] 
+      });
+      toast.success('Comment deleted');
+    },
+    onError: (error: any) => {
+      console.error('Delete comment error:', error);
+      if (error.message?.includes('Unauthorized')) {
+        toast.error('You can only delete your own comments');
+      } else {
+        toast.error('Failed to delete comment. Please try again.');
+      }
+    },
+  });
+}
+
+export function useDeleteReply() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      feedItemId, 
+      parentCommentId, 
+      replyId 
+    }: { 
+      feedItemId: bigint; 
+      parentCommentId: bigint; 
+      replyId: bigint;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.deleteReply(feedItemId, parentCommentId, replyId);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['threadedComments', variables.feedItemId.toString()] 
+      });
+      toast.success('Reply deleted');
+    },
+    onError: (error: any) => {
+      console.error('Delete reply error:', error);
+      if (error.message?.includes('Unauthorized')) {
+        toast.error('You can only delete your own replies');
+      } else {
+        toast.error('Failed to delete reply. Please try again.');
       }
     },
   });

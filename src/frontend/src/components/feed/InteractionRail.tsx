@@ -63,10 +63,10 @@ export function InteractionRail({
         <Button
           variant="ghost"
           size="icon"
-          className={`h-12 w-12 rounded-full transition-all ${
+          className={`h-12 w-12 rounded-full border transition-all ${
             isLiked
-              ? 'bg-red-500/20 hover:bg-red-500/30 text-red-500'
-              : 'bg-black/40 hover:bg-black/60 text-white'
+              ? 'bg-red-500/20 hover:bg-red-500/30 text-red-500 border-red-500/40'
+              : 'bg-black/60 hover:bg-black/80 text-white border-white/20'
           }`}
           onClick={handleLikeClick}
           disabled={isLoading}
@@ -86,7 +86,7 @@ export function InteractionRail({
         <Button
           variant="ghost"
           size="icon"
-          className="h-12 w-12 rounded-full bg-black/40 hover:bg-black/60 text-white"
+          className="h-12 w-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20"
           onClick={handleCommentClick}
         >
           <MessageCircle className="h-7 w-7" />
@@ -100,7 +100,7 @@ export function InteractionRail({
         <Button
           variant="ghost"
           size="icon"
-          className="h-12 w-12 rounded-full bg-black/40 hover:bg-black/60 text-white"
+          className="h-12 w-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20"
           onClick={handleShareClick}
         >
           <Share2 className="h-7 w-7" />
@@ -111,7 +111,7 @@ export function InteractionRail({
         <Button
           variant="ghost"
           size="icon"
-          className="h-12 w-12 rounded-full bg-black/40 hover:bg-black/60 text-white"
+          className="h-12 w-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20"
           onClick={handleDownload}
         >
           <Download className="h-7 w-7" />

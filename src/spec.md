@@ -1,12 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Fix Internet Identity login in the Android APK/WebView context by using an external browser authentication flow that returns to the app and completes login automatically, while preserving normal browser behavior.
+**Goal:** Replace the current bottom-sheet comments UI with a full-screen TikTok-style comments screen, including typical comment interactions (likes, replies, delete) and correct comment-count updates.
 
 **Planned changes:**
-- Detect when the app is running inside an embedded/in-app browser (e.g., Android APK WebView) and, in that case, initiate Internet Identity login by opening the device’s external browser instead of authenticating inside the WebView.
-- Add a safe return-to-app handling path that finalizes authentication automatically on load/resume after the external browser completes, and cleans any temporary callback parameters/fragments from the URL.
-- Add English user-facing UI feedback for the workaround flow (explain that login will open in the device browser, show in-progress/disabled login state, and show clear error/retry if cancelled or failed).
-- Keep existing Internet Identity login/logout behavior unchanged for standard (non-WebView) browsers, including current logout cache-clearing behavior.
+- Swap the feed’s comment button behavior to open a full-screen comments view (not a bottom sheet) with an explicit close/back control that returns to the feed.
+- Implement a TikTok-like full-screen comments layout: header with “Comments” and total count, scrollable comment list, and a sticky bottom composer with mobile/PWA safe-area padding.
+- Add comment interactions in the UI: like/unlike with count, reply with threaded replies under the parent, delete own comments/replies, and basic sorting (e.g., Top/Newest) with clear indication.
+- Extend the Motoko backend comment model/APIs to support threaded replies and comment likes while preserving existing top-level comment posting (including optional media attachments).
+- Update React Query hooks to use new backend APIs for replies/likes/deletion and ensure mutations invalidate/refetch so lists and counts stay in sync.
+- Fix the comment count propagation bug by removing side-effects from a useState initializer and updating count via an effect tied to comment data changes.
+- Apply a coherent dark theme for the full-screen comments UI using a consistent non-blue/non-purple accent color across header/dividers/buttons and loading/error/empty states.
 
-**User-visible outcome:** In the Android APK, tapping “Login” opens the system browser for Internet Identity and then returns to the app already logged in (or shows a clear English error with retry). In normal browsers, login/logout continues to work as it does today.
+**User-visible outcome:** Tapping the comment icon opens a full-screen TikTok-style comments experience where users can read, sort, like, reply in threads, delete their own comments, and post new comments without the composer being hidden by system UI; closing returns to the feed with comment counts updating correctly.

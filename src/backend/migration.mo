@@ -1,41 +1,42 @@
-import Set "mo:core/Set";
-import Map "mo:core/Map";
 import List "mo:core/List";
-import Nat "mo:core/Nat";
+import Map "mo:core/Map";
+import Set "mo:core/Set";
 import Principal "mo:core/Principal";
-import Storage "blob-storage/Storage";
+import Blob "mo:core/Blob";
 
 module {
-  type OldActor = {
-    feedItems : List.List<{ id : Nat; media : { #video : Storage.ExternalBlob; #image : Storage.ExternalBlob }; handle : Text; caption : Text; likeCount : Nat }>;
-    userLikes : Map.Map<Text, Set.Set<Principal>>;
-    userProfiles : Map.Map<Principal, { name : Text }>;
+  public type ThreadedComment = {
+    id : Nat;
+    author : Principal;
+    text : Text;
+    media : ?{ #image : Blob; #video : Blob };
+    likes : Set.Set<Principal>;
+    replies : List.List<ThreadedComment>;
   };
 
-  type NewFeedItem = {
+  public type OldFeedItem = {
     id : Nat;
-    media : { #video : Storage.ExternalBlob; #image : Storage.ExternalBlob };
+    media : { #video : Blob; #image : Blob };
     handle : Text;
     caption : Text;
     likeCount : Nat;
   };
 
-  type NewComment = {
-    id : Nat;
-    author : Principal;
-    text : Text;
-    media : ?{ #video : Storage.ExternalBlob; #image : Storage.ExternalBlob };
+  public type OldActor = {
+    feedItems : List.List<OldFeedItem>;
+    userLikes : Map.Map<Text, Set.Set<Principal>>;
+    comments : Map.Map<Nat, List.List<{ id : Nat; author : Principal; text : Text; media : ?{ #video : Blob; #image : Blob } }>>;
+    userProfiles : Map.Map<Principal, { name : Text }>;
   };
 
-  type NewActor = {
-    feedItems : List.List<NewFeedItem>;
+  public type NewActor = {
+    feedItems : List.List<OldFeedItem>;
     userLikes : Map.Map<Text, Set.Set<Principal>>;
+    comments : Map.Map<Nat, List.List<{ id : Nat; author : Principal; text : Text; media : ?{ #video : Blob; #image : Blob } }>>;
     userProfiles : Map.Map<Principal, { name : Text }>;
-    comments : Map.Map<Nat, List.List<NewComment>>;
   };
 
   public func run(old : OldActor) : NewActor {
-    let comments = Map.empty<Nat, List.List<NewComment>>();
-    { old with comments };
+    old;
   };
 };

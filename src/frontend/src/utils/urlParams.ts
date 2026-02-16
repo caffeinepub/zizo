@@ -33,43 +33,6 @@ export function getUrlParameter(paramName: string): string | null {
 }
 
 /**
- * Removes a parameter from the URL without reloading the page
- * Works with both regular query strings and hash-based routing
- *
- * @param paramName - The name of the parameter to remove
- */
-export function removeUrlParameter(paramName: string): void {
-    if (!window.history?.replaceState) {
-        return;
-    }
-
-    const url = new URL(window.location.href);
-    
-    // Remove from regular query string
-    url.searchParams.delete(paramName);
-    
-    // Remove from hash if present
-    const hash = url.hash;
-    if (hash && hash.length > 1) {
-        const hashContent = hash.substring(1);
-        const queryStartIndex = hashContent.indexOf('?');
-        
-        if (queryStartIndex !== -1) {
-            const routePath = hashContent.substring(0, queryStartIndex);
-            const queryString = hashContent.substring(queryStartIndex + 1);
-            
-            const params = new URLSearchParams(queryString);
-            params.delete(paramName);
-            
-            const newQueryString = params.toString();
-            url.hash = routePath + (newQueryString ? '?' + newQueryString : '');
-        }
-    }
-    
-    window.history.replaceState({}, '', url.toString());
-}
-
-/**
  * Stores a parameter in sessionStorage for persistence across navigation
  * Useful for maintaining state like admin tokens throughout the session
  *
@@ -186,6 +149,35 @@ function clearParamFromHash(paramName: string): void {
     // If we still have content in the hash, keep it; otherwise remove the hash entirely
     const newUrl = window.location.pathname + window.location.search + (newHash ? '#' + newHash : '');
     window.history.replaceState(null, '', newUrl);
+}
+
+/**
+ * Removes a URL parameter from both query string and hash without reloading the page
+ * Works with both regular query params and hash-based routing
+ *
+ * @param paramName - The parameter to remove
+ *
+ * @example
+ * // URL: https://app.com/?postId=123
+ * // After removeUrlParameter('postId')
+ * // URL: https://app.com/
+ */
+export function removeUrlParameter(paramName: string): void {
+    if (!window.history.replaceState) {
+        return;
+    }
+
+    // Remove from regular query string
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has(paramName)) {
+        urlParams.delete(paramName);
+        const newQueryString = urlParams.toString();
+        const newUrl = window.location.pathname + (newQueryString ? '?' + newQueryString : '') + window.location.hash;
+        window.history.replaceState(null, '', newUrl);
+    }
+
+    // Also try to remove from hash
+    clearParamFromHash(paramName);
 }
 
 /**

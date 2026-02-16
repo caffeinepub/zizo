@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { useAddComment } from '../../hooks/useQueries';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useInternetIdentity } from '../../hooks/useInternetIdentityExternalBrowser';
 import { Loader2, Image as ImageIcon, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,7 +26,6 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
 
@@ -35,7 +34,6 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
       return;
     }
 
-    // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error('File size must be less than 50MB');
@@ -70,7 +68,6 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
         media,
       });
 
-      // Reset form
       setText('');
       setSelectedFile(null);
       setUploadProgress(0);
@@ -78,10 +75,7 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
         fileInputRef.current.value = '';
       }
 
-      // Notify parent of new comment count
       if (onCommentAdded) {
-        // The count will be updated via the query invalidation
-        // We just trigger a re-fetch by passing a placeholder
         onCommentAdded(0);
       }
     } catch (error) {
@@ -91,7 +85,7 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
 
   if (!isAuthenticated) {
     return (
-      <div className="px-6 py-4 text-center">
+      <div className="px-4 py-4 text-center">
         <p className="text-sm text-muted-foreground">
           Please log in to post a comment
         </p>
@@ -100,7 +94,7 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
   }
 
   return (
-    <div className="px-6 py-4 space-y-3">
+    <div className="px-4 py-3 space-y-2">
       {selectedFile && (
         <div className="relative inline-block">
           <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg">
@@ -133,12 +127,12 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-end">
         <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add a comment..."
-          className="min-h-[44px] max-h-[120px] resize-none"
+          className="min-h-[44px] max-h-[120px] resize-none flex-1"
           disabled={addCommentMutation.isPending}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -148,7 +142,7 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
           }}
         />
 
-        <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -164,19 +158,21 @@ export function CommentComposer({ feedItemId, onCommentAdded }: CommentComposerP
             onClick={() => fileInputRef.current?.click()}
             disabled={addCommentMutation.isPending}
             title="Attach image or video"
+            className="h-11 w-11"
           >
-            <ImageIcon className="h-4 w-4" />
+            <ImageIcon className="h-5 w-5" />
           </Button>
 
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit}
             size="icon"
+            className="h-11 w-11"
           >
             {addCommentMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <span className="text-lg">→</span>
+              <span className="text-xl">→</span>
             )}
           </Button>
         </div>

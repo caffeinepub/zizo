@@ -1,91 +1,147 @@
 {
   "kind": "build_request",
-  "title": "Fix Internet Identity login for Android APK by using external browser redirect and return-to-app flow",
-  "priority": "high",
+  "title": "Full-screen TikTok-style comment screen with typical comment interactions",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the Internet Identity login flow so that, when the app is running inside an Android APK WebView (or otherwise an embedded/in-app browser), login does not open Internet Identity inside the WebView. Instead, initiate authentication by opening the device’s external browser and, after successful authentication, return the user back to the app and complete login.",
+      "text": "Replace the existing bottom-sheet comments UI with a full-screen TikTok-style comments screen that opens when the user taps the comment button on a feed item, and closes via an explicit close control.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Yes I'm okay with the workaround where the APK temporary opened the device browser for login then automatically return to the app",
-          "Okay yes implement the login fixed"
+          "Full screen like  tiktok",
+          "Leave it at its current position",
+          "Build it"
         ]
       },
       "acceptanceCriteria": [
-        "In the Android APK packaging context, tapping “Login” does not show Google’s 'Access blocked: Internet Identity’s request does not comply with Google’s policies' error.",
-        "Login launches the system browser for Internet Identity authentication (not the embedded WebView).",
-        "After completing authentication in the external browser, the app returns to the ZIZO app view and the user is treated as authenticated (identity is available and authenticated-only UI behaves accordingly).",
-        "If the user cancels or the flow fails, the app returns to the app view and shows a clear, English error state without breaking the app shell."
+        "Tapping the comment icon in the feed opens a full-screen comments view (not a bottom sheet).",
+        "The full-screen comments view includes a visible close/back control and returns to the feed when closed.",
+        "The feed remains intact behind the comments flow (no route breakage required)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Preserve the existing login behavior for normal desktop/mobile browsers (non-WebView) so that login continues to work as it does today unless the embedded-browser workaround is needed.",
+      "text": "Implement a TikTok-like full-screen comments layout: a header showing the comment count, a scrollable comment list in the middle, and a sticky composer area at the bottom with safe-area padding for mobile/PWA.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Okay yes implement the login fixed"
+          "Let it contain all tiktok comment features"
         ]
       },
       "acceptanceCriteria": [
-        "On standard browsers (e.g., Chrome/Firefox/Safari), the login flow continues to function without forcing an external-browser workaround.",
-        "Logout continues to clear identity and clears React Query cache as currently implemented."
+        "Header shows “Comments” and the current total count for the active feed item.",
+        "Comment list is independently scrollable while the composer stays pinned at the bottom.",
+        "Layout respects iOS/Android safe areas (no composer hidden behind system UI)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add user-facing, English UI feedback for the workaround flow: when the app needs to switch to the external browser for login, inform the user what is happening and what to do next, and show an in-progress state until the app finishes handling the return.",
-      "target": "frontend",
+      "text": "Add typical TikTok comment interactions to the UI: like/unlike a comment, reply to a comment (threaded replies), and delete the caller’s own comments/replies. Include basic sorting controls (e.g., “Top” and “Newest”) implemented in a predictable way.",
+      "target": "both",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "I successfully generated an APK and when I also login in it showed (Access blocked: Internet Identity’s request does not comply with Google’s policies)"
+          "Let it contain all tiktok comment features"
         ]
       },
       "acceptanceCriteria": [
-        "When the workaround is triggered, the user sees a clear message indicating that login will open in the device browser and they should return to the app afterward.",
-        "The login button shows an in-progress/disabled state while the flow is being initiated and while the app is finalizing login after return.",
-        "All user-facing text added/changed for this work is in English."
+        "Each comment row displays actions for Like and Reply; Like shows a count.",
+        "Replies are displayed as a thread under the parent comment (visually indented or grouped).",
+        "The caller can delete their own comment/reply and the list updates accordingly.",
+        "User can switch between at least two sort modes; sort mode clearly indicated in the UI."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement safe return handling after external-browser authentication so that the app can finalize authentication on load/resume and does not get stuck in a partial state; ensure any temporary URL parameters/fragments used for the return flow are cleaned up from the URL after processing.",
+      "text": "Extend the Motoko backend comment model and APIs to support comment likes and threaded replies for a given feed item, while preserving existing comment posting (including optional media attachments).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Let it contain all tiktok comment features"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes methods to: (1) add a top-level comment, (2) add a reply referencing a parent comment, (3) toggle like on a comment, (4) delete a comment/reply with authorization (author-only or admin).",
+        "Backend query returns comments in a form that allows the frontend to render threads (parent/child relationship) and like counts.",
+        "Existing addComment/getComments behavior continues to work for top-level comments (backwards compatibility via new fields or new endpoints is acceptable)."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Update React Query hooks to call the new backend APIs for replies, comment likes, deletion, and refetch/invalidate the relevant queries so counts and lists update immediately.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "...temporary opened the device browser for login then automatically return to the app"
+          "Build it"
         ]
       },
       "acceptanceCriteria": [
-        "After returning from the external browser, the app finalizes authentication automatically without requiring a second manual login click.",
-        "Any temporary callback-related URL data used for the workaround is removed from the address bar after it is processed.",
-        "If finalization fails, the app remains usable and surfaces a clear error with an option to retry login."
+        "New hooks exist for toggling comment likes, adding replies, and deleting comments/replies.",
+        "After any mutation, the comments list updates without requiring a full page reload.",
+        "The feed item’s displayed comment count stays in sync with the backend/comments query."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Fix the current comment count propagation bug in the existing comments component logic (it currently uses a state initializer for a side-effect) so comment count updates are performed correctly when comment data changes.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "I would like the comment session to be a tiktok like comment section"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No side-effects are performed inside a useState initializer for comment-count updates.",
+        "Comment count callback is invoked only when the underlying comments data changes.",
+        "No React warnings are introduced by the updated effect logic."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Apply a coherent visual theme for the new full-screen comments UI that matches the existing dark, TikTok-style player aesthetic, using a distinct accent color that is not blue/purple, and apply it consistently (header, dividers, buttons, empty/loading states).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Build it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Full-screen comments UI uses the same overall dark visual language as the feed/player.",
+        "A single non-blue/non-purple accent color is used consistently for highlights/actions.",
+        "Loading, error, and empty states are styled and readable on dark backgrounds."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (compose them instead).",
-    "Do not edit immutable hook entrypoints listed in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts may be immutable depending on project setup; if immutable in this workspace, implement the workaround by adding a new hook/module and updating call sites without editing the immutable file).",
-    "Backend must remain single-actor; no backend changes are required for this login workaround."
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration logic if state upgrades truly require it.",
+    "Do not edit files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT; compose existing UI components instead.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Implementing native Android code (Java/Kotlin) for Chrome Custom Tabs.",
+    "Implementing real-time comment updates (no WebSockets/push).",
     "Adding third-party authentication providers beyond Internet Identity.",
-    "Building or distributing the APK itself; this request is limited to app code changes that enable the workaround login flow."
+    "Adding external databases or off-chain storage beyond the existing blob-storage mixin."
   ],
   "imageRequirements": {
     "required": [],

@@ -26,6 +26,22 @@ export interface FeedItem {
 }
 export type MediaType = { 'video' : ExternalBlob } |
   { 'image' : ExternalBlob };
+export interface ReplyView {
+  'id' : bigint,
+  'media' : [] | [MediaType],
+  'likeCount' : bigint,
+  'text' : string,
+  'author' : Principal,
+  'replies' : Array<ThreadedCommentView>,
+}
+export interface ThreadedCommentView {
+  'id' : bigint,
+  'media' : [] | [MediaType],
+  'likeCount' : bigint,
+  'text' : string,
+  'author' : Principal,
+  'replies' : Array<ThreadedCommentView>,
+}
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -60,13 +76,21 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addComment' : ActorMethod<[bigint, string, [] | [MediaType]], Comment>,
   'addMedia' : ActorMethod<[MediaType, [] | [string]], FeedItem>,
+  'addReply' : ActorMethod<
+    [bigint, bigint, string, [] | [MediaType]],
+    [[] | [ReplyView], Array<ReplyView>]
+  >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'deleteComment' : ActorMethod<[bigint, bigint], undefined>,
+  'deleteReply' : ActorMethod<[bigint, bigint, bigint], undefined>,
   'fetchFeedItems' : ActorMethod<[], Array<FeedItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getComments' : ActorMethod<[bigint], Array<Comment>>,
+  'getThreadedComments' : ActorMethod<[bigint], Array<ThreadedCommentView>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'likeComment' : ActorMethod<[bigint, bigint], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchByKeyword' : ActorMethod<[string], Array<FeedItem>>,
   'toggleLike' : ActorMethod<[string], undefined>,

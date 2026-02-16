@@ -12,7 +12,7 @@ export function SearchButton() {
         onClick={() => setDialogOpen(true)}
         size="icon"
         variant="ghost"
-        className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 text-white"
+        className="h-10 w-10 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20"
       >
         <Search className="h-5 w-5" />
       </Button>

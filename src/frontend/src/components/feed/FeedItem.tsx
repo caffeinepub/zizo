@@ -4,11 +4,12 @@ import { FeedOverlay } from './FeedOverlay';
 import { InteractionRail } from './InteractionRail';
 import { SpeedControl } from './SpeedControl';
 import { VideoOverlayControls } from './VideoOverlayControls';
+import { PlayerSocialActions } from './PlayerSocialActions';
 import { CommentsSheet } from '../comments/CommentsSheet';
 import { ShareMenu } from '../share/ShareMenu';
 import { useDoubleTap } from '../../hooks/useDoubleTap';
 import { useToggleLike, useUserLikes } from '../../hooks/useQueries';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useInternetIdentity } from '../../hooks/useInternetIdentityExternalBrowser';
 import { generateShareUrl } from '../../utils/shareLinks';
 import { Heart } from 'lucide-react';
 
@@ -176,6 +177,7 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
           caption={item.caption}
           isActive={isActive}
           isVideo={isVideo}
+          socialActions={<PlayerSocialActions handle={item.handle} />}
         >
           {isActive && isVideo && (
             <SpeedControl
@@ -211,8 +213,6 @@ export const FeedItem = forwardRef<HTMLDivElement, FeedItemProps>(({ item, isAct
         open={shareMenuOpen}
         onOpenChange={setShareMenuOpen}
         shareUrl={shareUrl}
-        title={`Check out this post by ${item.handle}`}
-        text={item.caption || 'Check out this post on ZIZO!'}
       />
     </>
   );

@@ -33,13 +33,9 @@ export function LoginButton() {
     <Button
       onClick={handleAuth}
       disabled={isLoggingIn}
-      variant={isAuthenticated ? 'outline' : 'default'}
+      variant="ghost"
       size="sm"
-      className={
-        isAuthenticated
-          ? 'bg-white/10 hover:bg-white/20 text-white border-white/30'
-          : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-      }
+      className="bg-black/60 hover:bg-black/80 text-white border border-white/20"
     >
       {isLoggingIn ? (
         <>

@@ -1,114 +1,137 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "External-browser Internet Identity login workaround for Android APK WebView",
+  "title": "Full-screen TikTok-style comments experience with threaded replies, likes, delete, sorting, and dark theme",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add an external-browser Internet Identity login path for Android APK WebView/embedded browsers, with return-to-app completion.",
+      "summary": "Replace the bottom-sheet comments UI with a full-screen overlay comments screen opened from the feed comment button and closed with an explicit control.",
       "acceptanceCriteria": [
-        "In the Android APK packaging context, tapping “Login” does not show Google’s 'Access blocked: Internet Identity’s request does not comply with Google’s policies' error.",
-        "Login launches the system browser for Internet Identity authentication (not the embedded WebView).",
-        "After completing authentication in the external browser, the app returns to the ZIZO app view and the user is treated as authenticated (identity is available and authenticated-only UI behaves accordingly).",
-        "If the user cancels or the flow fails, the app returns to the app view and shows a clear, English error state without breaking the app shell."
+        "Tapping the comment icon in the feed opens a full-screen comments view (not a bottom sheet).",
+        "The full-screen comments view includes a visible close/back control and returns to the feed when closed.",
+        "The feed remains intact behind the comments flow (no route breakage required)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
-          "operation": "create",
-          "description": "Create a new Internet Identity provider/hook module that detects embedded Android WebView and initiates an external-browser authentication flow with safe return-to-app completion (including storing temporary state needed to finalize auth after return). Keep it API-compatible with the existing hook where possible so identity-driven UI continues to work. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/embeddedBrowser.ts",
-          "operation": "create",
-          "description": "Add embedded/in-app browser detection helpers (e.g., Android WebView heuristics) used to decide when to trigger the external-browser workaround versus the existing behavior. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/iiExternalReturn.ts",
-          "operation": "create",
-          "description": "Add helpers to manage the workaround return flow (persisting a nonce/state marker, reading callback-related URL params/fragments, and signaling the provider to finalize authentication after returning from the external browser). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/main.tsx",
+          "path": "frontend/src/components/comments/CommentsSheet.tsx",
           "operation": "modify",
-          "description": "Wire the app to use the new external-browser-capable Internet Identity provider instead of the current provider so identity becomes available after returning from external authentication. Verify the component's usage instructions before implementing."
+          "description": "Replace the current bottom-sheet implementation with a full-screen overlay implementation (fixed inset container with high z-index) that can be opened/closed via props, includes an explicit close/back control, and leaves the feed mounted behind it."
         },
         {
-          "path": "frontend/src/hooks/useActor.ts",
+          "path": "frontend/src/components/feed/FeedItem.tsx",
           "operation": "modify",
-          "description": "Update Internet Identity hook import to the new external-browser-capable module so the backend actor is created with the finalized identity after external return. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Update Internet Identity hook import to the new external-browser-capable module so authenticated queries/mutations react correctly to identity changes after external return. Verify the component's usage instructions before implementing."
+          "description": "Keep the existing open/close state wiring from the interaction rail, but ensure it now opens the updated full-screen CommentsSheet overlay and closes cleanly without navigation changes."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Preserve current Internet Identity behavior on standard browsers and keep logout + React Query cache clearing unchanged.",
+      "summary": "Implement TikTok-like full-screen comments layout with header count, independently scrollable list, and sticky safe-area-aware composer.",
       "acceptanceCriteria": [
-        "On standard browsers (e.g., Chrome/Firefox/Safari), the login flow continues to function without forcing an external-browser workaround.",
-        "Logout continues to clear identity and clears React Query cache as currently implemented."
+        "Header shows “Comments” and the current total count for the active feed item.",
+        "Comment list is independently scrollable while the composer stays pinned at the bottom.",
+        "Layout respects iOS/Android safe areas (no composer hidden behind system UI)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+          "path": "frontend/src/components/comments/CommentsSheet.tsx",
           "operation": "modify",
-          "description": "Ensure the new provider only triggers the external-browser workaround when embedded/in-app browser detection indicates it is necessary; otherwise keep the current in-browser AuthClient login behavior. Maintain compatible logout/clear behavior so existing cache clearing in the UI continues to work. Verify the component's usage instructions before implementing."
+          "description": "Implement the full-screen layout structure: (1) header with “Comments” + count, (2) middle section with its own scrolling for the list, (3) bottom sticky composer area that includes safe-area padding (use existing safe-area utility classes) and remains visible while scrolling."
         },
         {
-          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "path": "frontend/src/components/comments/CommentComposer.tsx",
           "operation": "modify",
-          "description": "Keep existing logout behavior intact (calling clear() and clearing React Query cache) while updating imports/hook usage to the new provider so desktop/mobile browsers continue to log in as they do today when the workaround is not needed. Verify the component's usage instructions before implementing."
+          "description": "Adjust the composer container spacing and safe-area behavior for the new full-screen overlay so the input and send/attach controls remain usable on mobile/PWA with bottom insets; continue supporting optional media attachments via blob-storage ExternalBlob. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add clear English UI messaging and in-progress states for the external-browser workaround login flow.",
+      "summary": "Add TikTok-like comment interactions: like/unlike, threaded replies, author-only delete, and sort controls (Top/Newest) in the full-screen UI.",
       "acceptanceCriteria": [
-        "When the workaround is triggered, the user sees a clear message indicating that login will open in the device browser and they should return to the app afterward.",
-        "The login button shows an in-progress/disabled state while the flow is being initiated and while the app is finalizing login after return.",
-        "All user-facing text added/changed for this work is in English."
+        "Each comment row displays actions for Like and Reply; Like shows a count.",
+        "Replies are displayed as a thread under the parent comment (visually indented or grouped).",
+        "The caller can delete their own comment/reply and the list updates accordingly.",
+        "User can switch between at least two sort modes; sort mode clearly indicated in the UI."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "path": "frontend/src/components/comments/CommentList.tsx",
           "operation": "modify",
-          "description": "Add user-facing English feedback when the workaround path is used (e.g., toast/banner text explaining the browser switch and return-to-app step), and ensure the button shows a disabled/in-progress state both during external launch and during post-return finalization. Use the existing authorization-based auth flow patterns (Internet Identity + cache clearing) as guidance; verify the component's usage instructions before implementing."
+          "description": "Evolve the list rendering to support threaded comments (parent with replies) and per-row actions (Like, Reply, Delete). Use the authorization component’s frontend guidance (Internet Identity principal comparison) to decide whether to show Delete for the caller’s own comments/replies. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/comments/CommentsSheet.tsx",
           "operation": "modify",
-          "description": "Surface clear English error messaging for workaround failures (e.g., show a toast that login failed/canceled with a retry hint) while keeping the app shell usable. Ensure authenticated-only UI reacts correctly once identity becomes available. Verify the component's usage instructions before implementing."
+          "description": "Switch the data source for the full-screen comments overlay from flat comments to threaded comments, add a visible sort mode control (at least Top/Newest) and apply a predictable client-side sort to the threaded structure while keeping the composer sticky."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query mutations/queries needed by the UI interactions (threaded fetch, like toggle behavior, add reply, delete comment, delete reply) and ensure they integrate cleanly with UI state for optimistic updates and/or refetching after actions."
         }
       ]
     },
     {
-      "id": "REQ-4",
-      "summary": "Finalize authentication automatically after external-browser return, clean temporary URL data, and avoid partial/stuck states with retry support.",
+      "id": "REQ-5",
+      "summary": "Update React Query hooks to use new backend capabilities for replies, comment likes, deletion, and ensure query invalidation keeps counts and lists in sync.",
       "acceptanceCriteria": [
-        "After returning from the external browser, the app finalizes authentication automatically without requiring a second manual login click.",
-        "Any temporary callback-related URL data used for the workaround is removed from the address bar after it is processed.",
-        "If finalization fails, the app remains usable and surfaces a clear error with an option to retry login."
+        "New hooks exist for toggling comment likes, adding replies, and deleting comments/replies.",
+        "After any mutation, the comments list updates without requiring a full page reload.",
+        "The feed item’s displayed comment count stays in sync with the backend/comments query."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useInternetIdentityExternalBrowser.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Implement safe on-load/on-resume finalization for the workaround flow: detect return markers, complete authentication automatically, and ensure the provider transitions out of any intermediate state. Expose a retry-friendly error state to the UI when finalization fails. Verify the component's usage instructions before implementing."
+          "description": "Implement new hooks for: fetching threaded comments, toggling likes on a comment, adding a reply, deleting a comment, deleting a reply; on success, invalidate/refetch the relevant comment queries and also refresh any feed/comment-count dependent state so the feed’s comment count stays synchronized."
         },
         {
-          "path": "frontend/src/utils/iiExternalReturn.ts",
+          "path": "frontend/src/components/feed/FeedItem.tsx",
           "operation": "modify",
-          "description": "Implement URL cleanup after processing the callback/return markers (using history.replaceState where available) and ensure temporary query/hash data and any session markers are cleared to avoid re-processing/stuck states. Verify the component's usage instructions before implementing."
+          "description": "Update comment count synchronization so the interaction rail’s comment count reliably reflects the latest threaded comments total after mutations (using invalidation-driven updates rather than placeholder values)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Fix comment count propagation by removing side-effects from useState initializer and updating counts only when comment data changes.",
+      "acceptanceCriteria": [
+        "No side-effects are performed inside a useState initializer for comment-count updates.",
+        "Comment count callback is invoked only when the underlying comments data changes.",
+        "No React warnings are introduced by the updated effect logic."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/comments/CommentsSheet.tsx",
+          "operation": "modify",
+          "description": "Replace the current useState initializer side-effect used for comment count propagation with a useEffect that triggers only when the underlying comments/threaded comments data (and feedItemId) changes, ensuring no React warnings and correct count updates."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Apply a consistent dark TikTok-style theme to the full-screen comments UI with a single non-blue/non-purple accent color and styled loading/error/empty states.",
+      "acceptanceCriteria": [
+        "Full-screen comments UI uses the same overall dark visual language as the feed/player.",
+        "A single non-blue/non-purple accent color is used consistently for highlights/actions.",
+        "Loading, error, and empty states are styled and readable on dark backgrounds."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Adjust global theme variables so primary/accent/ring use a single consistent non-blue/non-purple accent color (while keeping the overall dark aesthetic) and ensure components used by the full-screen comments UI inherit the updated theme."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/comments/CommentsSheet.tsx",
           "operation": "modify",
-          "description": "Trigger/allow automatic post-return finalization behavior on app load and ensure the shell stays usable if finalization fails, with a clear retry path (e.g., retry by clicking Login again). Verify the component's usage instructions before implementing."
+          "description": "Apply consistent dark-mode styling across header, dividers, buttons, and loading/error/empty states within the full-screen comments overlay, using the app’s accent color for interactive highlights (e.g., like, reply, active sort)."
+        },
+        {
+          "path": "frontend/src/components/comments/CommentList.tsx",
+          "operation": "modify",
+          "description": "Style threaded indentation/grouping, action buttons, and delete affordances to match the dark player aesthetic and use the single accent color consistently for interactive elements."
         }
       ]
     }

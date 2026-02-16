@@ -20,7 +20,7 @@ export function VideoOverlayControls({
         variant="ghost"
         size="icon"
         onClick={onPlayPause}
-        className="h-12 w-12 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+        className="h-12 w-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20"
       >
         {isPlaying ? (
           <Pause className="h-6 w-6" />
@@ -32,7 +32,7 @@ export function VideoOverlayControls({
         variant="ghost"
         size="icon"
         onClick={onMuteToggle}
-        className="h-12 w-12 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+        className="h-12 w-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20"
       >
         {isMuted ? (
           <VolumeX className="h-6 w-6" />
